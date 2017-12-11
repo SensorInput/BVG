@@ -23,7 +23,7 @@ public class RouteGetContext implements Route {
 		RouteHandler handler = new RouteHandler(connection);
 
 		String route = request.params("route");
-		response.type("application/json");
+		response.type("application/json; charset=utf-8");
 		return handler.getRoutes(route);
 	}
 }
