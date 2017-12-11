@@ -2,16 +2,16 @@ package de.htw.ai.busbunching.model;
 
 public class MeasurePoint {
 	private long time;
-	private String ref;
+	private long journyId;
 	private double lat;
 	private double lng;
 
 	public MeasurePoint() {
 	}
 
-	public MeasurePoint(long time, String ref, double lat, double lng) {
+	public MeasurePoint(long time, long journyId, double lat, double lng) {
 		this.time = time;
-		this.ref = ref;
+		this.journyId = journyId;
 		this.lat = lat;
 		this.lng = lng;
 	}
@@ -20,8 +20,8 @@ public class MeasurePoint {
 		return time;
 	}
 
-	public String getRef() {
-		return ref;
+	public long getJournyId() {
+		return journyId;
 	}
 
 	public double getLat() {

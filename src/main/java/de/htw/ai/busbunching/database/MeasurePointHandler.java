@@ -14,7 +14,7 @@ public class MeasurePointHandler {
 
 	public long importMeasurePoint(MeasurePoint point) throws SQLException {
 		PreparedStatement stmt = connection.prepareStatement("INSERT INTO MeasurePoint VALUES (0, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-		stmt.setString(1, point.getRef());
+		stmt.setLong(1, point.getJournyId());
 		stmt.setLong(2, point.getTime());
 		stmt.setDouble(3, point.getLat());
 		stmt.setDouble(4, point.getLng());

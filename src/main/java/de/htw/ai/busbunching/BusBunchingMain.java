@@ -1,8 +1,6 @@
 package de.htw.ai.busbunching;
 
-import de.htw.ai.busbunching.handler.PositionContext;
-import de.htw.ai.busbunching.handler.RouteGetContext;
-import de.htw.ai.busbunching.handler.RouteImportContext;
+import de.htw.ai.busbunching.handler.*;
 import de.htw.ai.busbunching.settings.Settings;
 import de.htw.ai.busbunching.settings.SettingsHandler;
 import de.htw.ai.busbunching.transformer.JsonTransformer;
@@ -33,6 +31,8 @@ public class BusBunchingMain {
 
 		port(4545);
 
+		get("/journey/:id", new JourneyGetContext(settings), new JsonTransformer());
+		post("/journey", "application/json", new JourneyPostContext(settings));
 		post("/position", "application/json", new PositionContext(settings));
 		get("/route/:route", new RouteGetContext(settings), new JsonTransformer());
 		post("/route", "application/json", new RouteImportContext(settings));
