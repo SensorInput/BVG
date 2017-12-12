@@ -1,9 +1,10 @@
 package de.htw.ai.busbunching.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.htw.ai.busbunching.database.RouteHandler;
 import de.htw.ai.busbunching.model.Route;
-import de.htw.ai.busbunching.model.RouteConverter;
+import de.htw.ai.busbunching.model.route.RouteFactory;
+import de.htw.ai.busbunching.model.route.RouteHandler;
+import de.htw.ai.busbunching.model.route.RouteType;
 import de.htw.ai.busbunching.settings.Settings;
 import de.htw.ai.busbunching.utils.DatabaseUtils;
 import org.geojson.Feature;
@@ -25,15 +26,17 @@ public class RouteImportContext implements spark.Route {
 	@Override
 	public Object handle(Request request, Response response) throws Exception {
 		Connection connection = DatabaseUtils.createDatabaseConnection(settings);
-		RouteHandler handler = new RouteHandler(connection);
 
 		FeatureCollection featureCollection = new ObjectMapper().readValue(request.bodyAsBytes(), FeatureCollection.class);
 		for (Feature feature : featureCollection.getFeatures()) {
 			if (feature.getProperties().containsKey("type") && feature.getProperties().get("type").equals("route")) {
-				Route line = RouteConverter.getLine(feature);
+				final RouteType routeType = RouteType.getRouteType(feature);
+
+				final RouteHandler handler = RouteFactory.getHandler(routeType);
+				Route line = handler.convertRoute(feature);
 				if (line != null) {
 					System.out.printf("Import Route: %s into database\n", line.getRef());
-					handler.importLine(line);
+					handler.getDatabaseHandler(connection).save(line);
 				}
 			}
 		}

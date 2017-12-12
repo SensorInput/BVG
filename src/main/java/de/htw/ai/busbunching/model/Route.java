@@ -1,12 +1,8 @@
 package de.htw.ai.busbunching.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.geojson.LngLatAlt;
-import org.geojson.MultiLineString;
+import de.htw.ai.busbunching.model.route.RouteType;
 
-import java.util.List;
-
-public class Route {
+public abstract class Route {
 
 	private long id;
 
@@ -25,21 +21,15 @@ public class Route {
 	private String from;
 	private String to;
 
-	private MultiLineString multiLineString;
+	private RouteType routeType;
 
-	public Route(String osmId, String ref, String name, String type, String network, String operator, String from, String to, MultiLineString multiLineString) {
-		this.osmId = osmId;
-		this.ref = ref;
-		this.name = name;
-		this.type = type;
-		this.network = network;
-		this.operator = operator;
-		this.from = from;
-		this.to = to;
-		this.multiLineString = multiLineString;
+	public Route(String osmId, String ref, String name, String type, String network,
+				 String operator, String from, String to, RouteType routeType) {
+		this(-1, osmId, ref, name, type, network, operator, from, to, routeType);
 	}
 
-	public Route(long id, String osmId, String ref, String name, String type, String network, String operator, String from, String to) {
+	public Route(long id, String osmId, String ref, String name, String type, String network,
+				 String operator, String from, String to, RouteType routeType) {
 		this.id = id;
 		this.osmId = osmId;
 		this.ref = ref;
@@ -49,19 +39,7 @@ public class Route {
 		this.operator = operator;
 		this.from = from;
 		this.to = to;
-	}
-
-	public Route(long id, String osmId, String ref, String name, String type, String network, String operator, String from, String to, MultiLineString multiLineString) {
-		this.id = id;
-		this.osmId = osmId;
-		this.ref = ref;
-		this.name = name;
-		this.type = type;
-		this.network = network;
-		this.operator = operator;
-		this.from = from;
-		this.to = to;
-		this.multiLineString = multiLineString;
+		this.routeType = routeType;
 	}
 
 	public long getId() {
@@ -100,39 +78,11 @@ public class Route {
 		return to;
 	}
 
-	@JsonIgnore
-	public MultiLineString getMultiLineString() {
-		return multiLineString;
-	}
-
-	@JsonIgnore
-	public String getMultiLineStringAsString() {
-		StringBuilder builder = new StringBuilder();
-
-		builder.append("MultiLineString(");
-
-		for (List<LngLatAlt> list : multiLineString.getCoordinates()) {
-			builder.append("(");
-
-			for (int i = 0; i < list.size(); i++) {
-				LngLatAlt point = list.get(i);
-				builder.append(point.getLongitude());
-				builder.append(" ");
-				builder.append(point.getLatitude());
-
-				if (i + 1 < list.size()) {
-					builder.append(", ");
-				}
-			}
-
-			builder.append(")");
-		}
-		builder.append(")");
-
-		return builder.toString();
-	}
-
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	public RouteType getRouteType() {
+		return routeType;
 	}
 }
