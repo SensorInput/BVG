@@ -10,12 +10,12 @@ class GeoJsonTransformer extends ResponseTransformer {
 	private val objectMapper = new ObjectMapper()
 
 	override def render(o: scala.Any): String = {
-		if (o.isInstanceOf[Route]) {
-			val route = o.asInstanceOf[Route]
-			val geoJson = RouteFactory.getHandler(route.getRouteType).convertToGeoJson(route)
-			objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(geoJson)
-		} else {
-			"Invalid Data"
+		o match {
+			case route: Route =>
+				val geoJson = RouteFactory.getHandler(route.getRouteType).convertToGeoJson(route)
+				objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(geoJson)
+			case _ =>
+				"Invalid Data"
 		}
 	}
 }

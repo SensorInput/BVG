@@ -15,7 +15,7 @@ object GeoJsonMultilineStringConverter {
 	def convertMultiLineStringToGeoJson(value: GeoMultiLineString): MultiLineString = {
 		val multiLineString = new MultiLineString()
 		val lines = asScalaBuffer(value.getLines)
-		val data = lines.map(line => GeoJsonLineStringConverter.convertLineStringToGeoJsonList(line)).foreach(multiLineString.add)
+		lines.map(line => GeoJsonLineStringConverter.convertLineStringToGeoJsonList(line)).foreach(multiLineString.add)
 		multiLineString
 	}
 
