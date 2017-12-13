@@ -6,6 +6,7 @@ import de.htw.ai.busbunching.geojson.GeoJsonLineStringConverter;
 import de.htw.ai.busbunching.model.Route;
 import de.htw.ai.busbunching.model.geometry.GeoLineString;
 import org.geojson.Feature;
+import org.geojson.GeoJsonObject;
 import org.geojson.LineString;
 
 import java.sql.Connection;
@@ -35,5 +36,23 @@ public class LineStringRouteHandler implements RouteHandler {
 	@Override
 	public RouteStoreHandler getDatabaseHandler(Connection connection) {
 		return new LineRouteStoreHandler(connection);
+	}
+
+	@Override
+	public GeoJsonObject convertToGeoJson(Route route) {
+		Feature value = new Feature();
+		value.getProperties().put("@id", route.getOsmId());
+		value.getProperties().put("ref", route.getRef());
+		value.getProperties().put("name", route.getName());
+		value.getProperties().put("type", route.getType());
+		value.getProperties().put("network", route.getNetwork());
+		value.getProperties().put("operator", route.getOperator());
+		value.getProperties().put("from", route.getFrom());
+		value.getProperties().put("to", route.getTo());
+		if (route instanceof LineStringRoute) {
+			final LineString geometry = GeoJsonLineStringConverter.convertLineStringToGeoJson(((LineStringRoute) route).getLineString());
+			value.setGeometry(geometry);
+		}
+		return value;
 	}
 }

@@ -3,6 +3,7 @@ package de.htw.ai.busbunching;
 import de.htw.ai.busbunching.handler.*;
 import de.htw.ai.busbunching.settings.Settings;
 import de.htw.ai.busbunching.settings.SettingsHandler;
+import de.htw.ai.busbunching.transformer.GeoJsonTransformer;
 import de.htw.ai.busbunching.transformer.JsonTransformer;
 
 import java.io.IOException;
@@ -35,6 +36,7 @@ public class BusBunchingMain {
 		post("/journey", "application/json", new JourneyPostContext(settings));
 		post("/position", "application/json", new PositionContext(settings));
 		get("/route/:route", new RouteGetContext(settings), new JsonTransformer());
+		get("/route/geo/:id", new RouteGeoJsonGetContext(settings), new GeoJsonTransformer());
 		post("/route", "application/json", new RouteImportContext(settings));
 	}
 }

@@ -10,7 +10,7 @@ import scala.collection.JavaConverters._
 object GeoJsonLineStringConverter {
 
 	def convertGeoJsonToLineString(line: util.List[LngLatAlt]): GeoLineString = {
-		val list = asScalaBuffer(line).map(coordinate => new GeoLngLat(coordinate.getLongitude, coordinate.getLongitude))
+		val list = asScalaBuffer(line).map(coordinate => new GeoLngLat(coordinate.getLongitude, coordinate.getLatitude))
 		new GeoLineString(list.asJava)
 	}
 
@@ -18,8 +18,35 @@ object GeoJsonLineStringConverter {
 		convertGeoJsonToLineString(line.getCoordinates)
 	}
 
+	def convertLineStringToGeoJson(value: GeoLineString): LineString = {
+		val coords = asScalaBuffer(value.getCoordinates)
+		val array = coords.map(point => new LngLatAlt(point.getLng, point.getLat))
+		new LineString(array.toArray: _*)
+	}
+
+	def convertLineStringToGeoJsonList(value: GeoLineString): util.List[LngLatAlt] = {
+		val coords = asScalaBuffer(value.getCoordinates)
+		coords.map(point => new LngLatAlt(point.getLng, point.getLat)).asJava
+	}
+
 	def lineStringToString(line: GeoLineString): String = {
 		val coordinates = asScalaBuffer(line.getCoordinates)
 		coordinates.map(point => point.toString).mkString("(", ", ", ")")
+	}
+
+	def stringToLineString(string: String): GeoLineString = {
+		var value = string
+		if (value.startsWith("(")) {
+			value = value.substring(1)
+		}
+		if (value.endsWith(")")) {
+			value = value.substring(0, value.length - 1)
+		}
+		val list = value.split(", ").map(elem => {
+			val coords = elem.split(" ")
+			new GeoLngLat(coords(0).toDouble, coords(1).toDouble)
+		}).toList
+
+		new GeoLineString(list.asJava)
 	}
 }

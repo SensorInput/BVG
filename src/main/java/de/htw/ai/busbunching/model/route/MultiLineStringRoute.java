@@ -1,5 +1,6 @@
 package de.htw.ai.busbunching.model.route;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.htw.ai.busbunching.model.Route;
 import de.htw.ai.busbunching.model.geometry.GeoMultiLineString;
 
@@ -7,6 +8,7 @@ public class MultiLineStringRoute extends Route {
 
 	private static final RouteType TYPE = RouteType.MULTILINE;
 
+	@JsonIgnore
 	private GeoMultiLineString multiLineString;
 
 	public MultiLineStringRoute(String osmId, String ref, String name, String type, String network, String operator, String from, String to) {
@@ -25,5 +27,9 @@ public class MultiLineStringRoute extends Route {
 
 	public GeoMultiLineString getMultiLineString() {
 		return multiLineString;
+	}
+
+	public void setMultiLineString(GeoMultiLineString multiLineString) {
+		this.multiLineString = multiLineString;
 	}
 }

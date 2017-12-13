@@ -2,11 +2,13 @@ package de.htw.ai.busbunching.database.route;
 
 import de.htw.ai.busbunching.geojson.GeoJsonMultilineStringConverter;
 import de.htw.ai.busbunching.model.Route;
+import de.htw.ai.busbunching.model.geometry.GeoMultiLineString;
 import de.htw.ai.busbunching.model.route.MultiLineStringRoute;
 
 import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 public class MultiLineRouteStoreHandler implements RouteStoreHandler {
 
@@ -52,12 +54,89 @@ public class MultiLineRouteStoreHandler implements RouteStoreHandler {
 			String from = rs.getString("from");
 			String to = rs.getString("to");
 
+
 			MultiLineStringRoute route = new MultiLineStringRoute(id, osmId, refFetched, name, type, network, operator, from, to);
+
+			getMultiLineString(id).ifPresent(data -> {
+				GeoMultiLineString geoMultiLineString = GeoJsonMultilineStringConverter.stringToMultiLineString(data);
+				route.setMultiLineString(geoMultiLineString);
+			});
 			routes.add(route);
 		}
 
 		rs.close();
 		stmt.close();
 		return routes;
+	}
+
+	private Optional<String> getMultiLineString(long id) {
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		try {
+			stmt = connection.prepareStatement("SELECT * FROM Multiline WHERE ref = ?");
+			stmt.setLong(1, id);
+
+			rs = stmt.executeQuery();
+
+			if (rs.first()) {
+				return Optional.of(rs.getString("multiline"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (rs != null)
+					rs.close();
+				if (stmt != null)
+					stmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return Optional.empty();
+	}
+
+	@Override
+	public Optional<Route> getRoute(int id) {
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		try {
+			stmt = connection.prepareStatement("SELECT * FROM Route WHERE id = ? AND geometry = \"MULTILINE\"");
+			stmt.setLong(1, id);
+
+			rs = stmt.executeQuery();
+
+			if (rs.first()) {
+				String osmId = rs.getString("@id");
+				String refFetched = rs.getString("ref");
+				String name = rs.getString("name");
+				String type = rs.getString("type");
+				String network = rs.getString("network");
+				String operator = rs.getString("operator");
+				String from = rs.getString("from");
+				String to = rs.getString("to");
+
+				MultiLineStringRoute route = new MultiLineStringRoute(id, osmId, refFetched, name, type, network, operator, from, to);
+
+				getMultiLineString(id).ifPresent(data -> {
+					GeoMultiLineString geoMultiLineString = GeoJsonMultilineStringConverter.stringToMultiLineString(data);
+					route.setMultiLineString(geoMultiLineString);
+				});
+
+				return Optional.of(route);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (rs != null)
+					rs.close();
+				if (stmt != null)
+					stmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return Optional.empty();
 	}
 }
