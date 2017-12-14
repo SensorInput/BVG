@@ -25,8 +25,9 @@ object GeoJsonLineStringConverter {
 	}
 
 	def convertLineStringToGeoJsonList(value: GeoLineString): util.List[LngLatAlt] = {
-		val coords = asScalaBuffer(value.getCoordinates)
-		coords.map(point => new LngLatAlt(point.getLng, point.getLat)).asJava
+		asScalaBuffer(value.getCoordinates)
+			.map(point => new LngLatAlt(point.getLng, point.getLat))
+			.asJava
 	}
 
 	def lineStringToString(line: GeoLineString): String = {
@@ -43,8 +44,8 @@ object GeoJsonLineStringConverter {
 			value = value.substring(0, value.length - 1)
 		}
 		val list = value.split(", ").map(elem => {
-			val coords = elem.split(" ")
-			new GeoLngLat(coords(0).toDouble, coords(1).toDouble)
+			val coordinates = elem.split(" ")
+			new GeoLngLat(coordinates(0).toDouble, coordinates(1).toDouble)
 		}).toList
 
 		new GeoLineString(list.asJava)

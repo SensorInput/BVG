@@ -15,22 +15,22 @@ object GeoJsonMultilineStringConverter {
 	def convertMultiLineStringToGeoJson(value: GeoMultiLineString): MultiLineString = {
 		val multiLineString = new MultiLineString()
 		val lines = asScalaBuffer(value.getLines)
-		lines.map(line => GeoJsonLineStringConverter.convertLineStringToGeoJsonList(line)).foreach(multiLineString.add)
+		lines.map(line => GeoJsonLineStringConverter.convertLineStringToGeoJsonList(line))
+			.foreach(multiLineString.add)
 		multiLineString
 	}
 
 	def multiLineStringToString(multiLineString: GeoMultiLineString): String = {
 		val lines = asScalaBuffer(multiLineString.getLines)
-		lines.map(GeoJsonLineStringConverter.lineStringToString).mkString("MultiLineString(", ", ", ")")
+		lines.map(GeoJsonLineStringConverter.lineStringToString)
+			.mkString("MultiLineString(", ", ", ")")
 	}
 
 	def stringToMultiLineString(string: String): GeoMultiLineString = {
 		val value = string.substring(17, string.length - 2)
-		val list = value.split("\\), \\(").map(elem => {
-			println(elem)
-			println()
-			GeoJsonLineStringConverter.stringToLineString(elem)
-		}).toList
+		val list = value.split("\\), \\(")
+			.map(elem => GeoJsonLineStringConverter.stringToLineString(elem))
+			.toList
 
 		new GeoMultiLineString(list.asJava)
 	}
