@@ -1,7 +1,8 @@
-package de.htw.ai.busbunching.model.route;
+package de.htw.ai.busbunching.factory;
 
 import de.htw.ai.busbunching.database.route.RouteStoreHandler;
 import de.htw.ai.busbunching.model.Route;
+import de.htw.ai.busbunching.route.RouteCalculator;
 import org.geojson.Feature;
 import org.geojson.GeoJsonObject;
 
@@ -13,4 +14,6 @@ public interface RouteHandler {
 	RouteStoreHandler getDatabaseHandler(Connection connection);
 
 	GeoJsonObject convertToGeoJson(Route route);
+
+	RouteCalculator getRouteCalculator();
 }

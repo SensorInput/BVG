@@ -1,8 +1,8 @@
 package de.htw.ai.busbunching.transformer
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import de.htw.ai.busbunching.factory.RouteFactory
 import de.htw.ai.busbunching.model.Route
-import de.htw.ai.busbunching.model.route.RouteFactory
 import spark.ResponseTransformer
 
 class GeoJsonTransformer extends ResponseTransformer {

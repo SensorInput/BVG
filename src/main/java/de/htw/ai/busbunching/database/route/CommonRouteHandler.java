@@ -13,8 +13,7 @@ public class CommonRouteHandler {
 	}
 
 	public long importLine(Route route) throws SQLException {
-		long lineId = insertLine(route);
-		return lineId;
+		return insertLine(route);
 	}
 
 	private long insertLine(Route route) throws SQLException {

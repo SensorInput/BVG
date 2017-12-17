@@ -1,7 +1,7 @@
 package de.htw.ai.busbunching.handler;
 
 import de.htw.ai.busbunching.database.route.CommonRouteHandler;
-import de.htw.ai.busbunching.model.route.RouteFactory;
+import de.htw.ai.busbunching.factory.RouteFactory;
 import de.htw.ai.busbunching.model.route.RouteType;
 import de.htw.ai.busbunching.settings.Settings;
 import de.htw.ai.busbunching.utils.DatabaseUtils;

@@ -1,7 +1,8 @@
 package de.htw.ai.busbunching.handler;
 
-import de.htw.ai.busbunching.database.route.CommonRouteHandler;
-import de.htw.ai.busbunching.model.route.RouteFactory;
+import de.htw.ai.busbunching.database.route.RouteStoreHandler;
+import de.htw.ai.busbunching.factory.RouteFactory;
+import de.htw.ai.busbunching.factory.RouteHandler;
 import de.htw.ai.busbunching.model.route.RouteType;
 import de.htw.ai.busbunching.settings.Settings;
 import de.htw.ai.busbunching.utils.DatabaseUtils;
@@ -24,15 +25,24 @@ public class RouteGetContext implements Route {
 	@Override
 	public Object handle(Request request, Response response) throws Exception {
 		Connection connection = DatabaseUtils.createDatabaseConnection(settings);
-		CommonRouteHandler handler = new CommonRouteHandler(connection);
 
 		String route = request.params("route");
 		response.type("application/json; charset=utf-8");
 
 		List<de.htw.ai.busbunching.model.Route> routes = new LinkedList<>();
 		for (RouteType type : RouteType.values()) {
-			routes.addAll(RouteFactory.getHandler(type).getDatabaseHandler(connection).getRoutes(route));
+			RouteHandler handler = RouteFactory.getHandler(type);
+			if (handler != null) {
+				RouteStoreHandler databaseHandler = handler.getDatabaseHandler(connection);
+				routes.addAll(databaseHandler.getRoutes(route));
+			}
 		}
+
+		for (de.htw.ai.busbunching.model.Route r : routes) {
+			System.out.println(RouteFactory.getHandler(r.getRouteType()).getRouteCalculator().calculateTotalRoute(r));
+		}
+
+		connection.close();
 		return routes;
 	}
 }

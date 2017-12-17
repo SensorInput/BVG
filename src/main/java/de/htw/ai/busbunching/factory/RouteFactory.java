@@ -1,4 +1,6 @@
-package de.htw.ai.busbunching.model.route;
+package de.htw.ai.busbunching.factory;
+
+import de.htw.ai.busbunching.model.route.RouteType;
 
 public class RouteFactory {
 

@@ -1,9 +1,9 @@
 package de.htw.ai.busbunching.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.htw.ai.busbunching.factory.RouteFactory;
+import de.htw.ai.busbunching.factory.RouteHandler;
 import de.htw.ai.busbunching.model.Route;
-import de.htw.ai.busbunching.model.route.RouteFactory;
-import de.htw.ai.busbunching.model.route.RouteHandler;
 import de.htw.ai.busbunching.model.route.RouteType;
 import de.htw.ai.busbunching.settings.Settings;
 import de.htw.ai.busbunching.utils.DatabaseUtils;
