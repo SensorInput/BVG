@@ -18,7 +18,7 @@ trait RouteCalculator {
 		getDistance(c1.getLat, c1.getLng, c2.getLat, c2.getLng)
 	}
 
-	// Source: https://github.com/janantala/GPS-distance/blob/master/java/Distance.java
+	// Source: https://www.htmlgoodies.com/beyond/javascript/calculate-the-distance-between-two-points-in-your-web-apps.html
 	private def getDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double = {
 		val theta: Double = lon1 - lon2
 		var dist: Double = Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2)) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.cos(deg2rad(theta))
