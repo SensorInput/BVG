@@ -11,5 +11,5 @@ public interface RouteStoreHandler {
 
 	List<Route> getRoutes(String ref) throws SQLException;
 
-	Optional<Route> getRoute(int id);
+	Optional<Route> getRoute(long id);
 }

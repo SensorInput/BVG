@@ -97,7 +97,7 @@ public class LineRouteStoreHandler implements RouteStoreHandler {
 	}
 
 	@Override
-	public Optional<Route> getRoute(int id) {
+	public Optional<Route> getRoute(long id) {
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 		try {

@@ -1,6 +1,8 @@
 package de.htw.ai.busbunching.model;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Journey {
 
@@ -8,6 +10,8 @@ public class Journey {
 	private long routeId;
 	private Timestamp startTime;
 	private Timestamp endTime;
+
+	private List<MeasurePoint> points;
 
 	public Journey() {
 	}
@@ -17,6 +21,15 @@ public class Journey {
 		this.routeId = routeId;
 		this.startTime = startTime;
 		this.endTime = endTime;
+		points = new ArrayList<>();
+	}
+
+	public Journey(long id, long routeId, Timestamp startTime, Timestamp endTime, List<MeasurePoint> points) {
+		this.id = id;
+		this.routeId = routeId;
+		this.startTime = startTime;
+		this.endTime = endTime;
+		this.points = points;
 	}
 
 	public long getId() {
@@ -33,5 +46,13 @@ public class Journey {
 
 	public Timestamp getEndTime() {
 		return endTime;
+	}
+
+	public List<MeasurePoint> getPoints() {
+		return points;
+	}
+
+	public void setPoints(List<MeasurePoint> points) {
+		this.points = points;
 	}
 }

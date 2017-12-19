@@ -1,8 +1,10 @@
 package de.htw.ai.busbunching.route
 
-import de.htw.ai.busbunching.model.Route
-import de.htw.ai.busbunching.model.geometry.GeoLineString
+import java.util
+
+import de.htw.ai.busbunching.model.geometry.{GeoLineString, GeoLngLat}
 import de.htw.ai.busbunching.model.route.LineStringRoute
+import de.htw.ai.busbunching.model.{Journey, Route}
 
 import scala.collection.JavaConverters._
 
@@ -32,5 +34,28 @@ class LineStringRouteCalculator extends RouteCalculator {
 			}
 		}
 		result
+	}
+
+	override def smoothJourneyCoordinates(journey: Journey, route: Route): Unit = {
+		route match {
+			case lineStringRoute: LineStringRoute =>
+				val coordinates = asScalaBuffer(lineStringRoute.getLineString.getCoordinates)
+
+				val resultList = new util.ArrayList[GeoLngLat]()
+				journey.getPoints.forEach(x => {
+					var possiblePoints: List[(GeoLngLat, Double)] = Nil
+					for (elem <- coordinates.indices) {
+						if (elem + 1 < coordinates.size) {
+							val nearestPoint = getClosestPointOnSegment(coordinates(elem), coordinates(elem + 1), x.getLngLat)
+							if (nearestPoint != null) {
+								possiblePoints = nearestPoint :: possiblePoints
+							}
+						}
+					}
+					val nearestPoint = possiblePoints.maxBy(x => x._2)._1
+					print(" [ " + nearestPoint.getLng + ", " + nearestPoint.getLat + " ], ")
+				})
+			case _ =>
+		}
 	}
 }
