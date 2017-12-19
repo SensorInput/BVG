@@ -4,9 +4,10 @@ import java.util
 
 import de.htw.ai.busbunching.model.geometry.{GeoLineString, GeoLngLat}
 import de.htw.ai.busbunching.model.route.LineStringRoute
-import de.htw.ai.busbunching.model.{Journey, Route}
+import de.htw.ai.busbunching.model.{Journey, MeasurePoint, Route}
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 
 class LineStringRouteCalculator extends RouteCalculator {
@@ -36,26 +37,39 @@ class LineStringRouteCalculator extends RouteCalculator {
 		result
 	}
 
-	override def smoothJourneyCoordinates(journey: Journey, route: Route): Unit = {
+	override def smoothJourneyCoordinates(journey: Journey, route: Route): util.List[MeasurePoint] = {
 		route match {
 			case lineStringRoute: LineStringRoute =>
 				val coordinates = asScalaBuffer(lineStringRoute.getLineString.getCoordinates)
+				smoothCoordinates(journey, coordinates)
+			case _ =>
+				null
+		}
+	}
 
-				val resultList = new util.ArrayList[GeoLngLat]()
-				journey.getPoints.forEach(x => {
-					var possiblePoints: List[(GeoLngLat, Double)] = Nil
-					for (elem <- coordinates.indices) {
-						if (elem + 1 < coordinates.size) {
-							val nearestPoint = getClosestPointOnSegment(coordinates(elem), coordinates(elem + 1), x.getLngLat)
-							if (nearestPoint != null) {
-								possiblePoints = nearestPoint :: possiblePoints
-							}
+	def smoothCoordinates(journey: Journey, coordinates: mutable.Buffer[GeoLngLat]): util.List[MeasurePoint] = {
+		val resultList = new util.ArrayList[MeasurePoint]()
+		var prevMeasurePoint: MeasurePoint = null
+		journey.getPoints.forEach(x => {
+			if ((prevMeasurePoint != null && calculateDistanceBetweenPoints(prevMeasurePoint.getLngLat, x.getLngLat) > 0.05) || prevMeasurePoint == null) {
+				var possiblePoints: List[(GeoLngLat, Double)] = Nil
+				for (elem <- coordinates.indices) {
+					if (elem + 1 < coordinates.size) {
+						val startPoint = coordinates(elem)
+						val endPoint = coordinates(elem + 1)
+						val nearestPoint = getClosestPointOnSegment(startPoint, endPoint, x.getLngLat)
+						if (nearestPoint != null) {
+							possiblePoints = nearestPoint :: possiblePoints
 						}
 					}
-					val nearestPoint = possiblePoints.maxBy(x => x._2)._1
-					print(" [ " + nearestPoint.getLng + ", " + nearestPoint.getLat + " ], ")
-				})
-			case _ =>
-		}
+				}
+				if (possiblePoints != Nil) {
+					val lngLat = possiblePoints.minBy(x => x._2)._1
+					resultList.add(new MeasurePoint(x.getTime, x.getJourneyId, lngLat))
+				}
+			}
+			prevMeasurePoint = x
+		})
+		resultList
 	}
 }

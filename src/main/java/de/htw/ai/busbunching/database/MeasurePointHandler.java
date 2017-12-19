@@ -50,7 +50,7 @@ public class MeasurePointHandler {
 			double lat = rs.getDouble("lat");
 			double lng = rs.getDouble("lng");
 			long time = rs.getLong("time");
-			points.add(new MeasurePoint(id, time, lat, lng));
+			points.add(new MeasurePoint(time, id, lat, lng));
 		}
 
 		rs.close();

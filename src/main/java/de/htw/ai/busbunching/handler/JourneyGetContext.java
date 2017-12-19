@@ -13,6 +13,8 @@ import spark.Response;
 import spark.Route;
 
 import java.sql.Connection;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public class JourneyGetContext implements Route {
 
@@ -32,13 +34,16 @@ public class JourneyGetContext implements Route {
 		long id = Long.valueOf(request.params("id"));
 		response.type("application/json; charset=utf-8");
 
-
 		Journey journey = handler.getJourney(id);
-		journey.setPoints(measurePointHandler.getMeasurePoints(id));
+		journey.setPoints(measurePointHandler.getMeasurePoints(journey.getId()));
 
+		final Optional<de.htw.ai.busbunching.model.Route> route = Stream.of(RouteType.values())
+				.map(type -> RouteFactory.getHandler(type).getDatabaseHandler(connection).getRoute(journey.getRouteId()))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.findFirst();
 
-		de.htw.ai.busbunching.model.Route route = RouteFactory.getHandler(RouteType.MULTILINE).getDatabaseHandler(connection).getRoute(journey.getRouteId()).get();
-		new MultiLineStringRouteCalculator().smoothJourneyCoordinates(journey, route);
+		route.ifPresent(val -> journey.setPoints(new MultiLineStringRouteCalculator().smoothJourneyCoordinates(journey, val)));
 
 		connection.close();
 		return journey;

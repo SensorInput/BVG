@@ -35,10 +35,7 @@ public class RouteGeoJsonGetContext implements Route {
 				.map(Optional::get)
 				.findFirst();
 
-		if (route.isPresent()) {
-			return route.get();
-		}
+		return route.orElse(null);
 
-		return null;
 	}
 }

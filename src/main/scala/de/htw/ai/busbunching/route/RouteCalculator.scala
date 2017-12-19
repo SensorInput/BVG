@@ -1,7 +1,9 @@
 package de.htw.ai.busbunching.route
 
+import java.util
+
 import de.htw.ai.busbunching.model.geometry.GeoLngLat
-import de.htw.ai.busbunching.model.{Journey, Route}
+import de.htw.ai.busbunching.model.{Journey, MeasurePoint, Route}
 
 trait RouteCalculator {
 
@@ -36,7 +38,7 @@ trait RouteCalculator {
 		rad * 180 / Math.PI
 	}
 
-	def smoothJourneyCoordinates(journey: Journey, route: Route)
+	def smoothJourneyCoordinates(journey: Journey, route: Route): util.List[MeasurePoint]
 
 	// http://www.java2s.com/Code/Java/2D-Graphics-GUI/Returnsclosestpointonsegmenttopoint.htm
 	def getClosestPointOnSegment(start: GeoLngLat, end: GeoLngLat, point: GeoLngLat): (GeoLngLat, Double) = {

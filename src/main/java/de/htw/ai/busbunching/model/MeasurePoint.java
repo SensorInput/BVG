@@ -33,4 +33,8 @@ public class MeasurePoint {
 	public GeoLngLat getLngLat() {
 		return lngLat;
 	}
+
+	public void setLngLat(GeoLngLat lngLat) {
+		this.lngLat = lngLat;
+	}
 }
