@@ -5,7 +5,6 @@ import de.htw.ai.busbunching.model.geometry.GeoLngLat;
 
 public class MeasurePoint {
 	private long id;
-	@JsonIgnore
 	private long journeyId;
 	private long time;
 	private GeoLngLat lngLat;
