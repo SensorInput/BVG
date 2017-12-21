@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/BusBunchingServer.iml" filepath="$PROJECT_DIR$/BusBunchingServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/BusbunchingServer.iml" filepath="$PROJECT_DIR$/BusbunchingServer.iml" />
     </modules>
   </component>
 </project>
