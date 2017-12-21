@@ -47,10 +47,11 @@ public class MeasurePointHandler {
 
 		while (rs.next()) {
 			int id = rs.getInt("id");
+			int journyId = rs.getInt("journey_id");
 			double lat = rs.getDouble("lat");
 			double lng = rs.getDouble("lng");
 			long time = rs.getLong("time");
-			points.add(new MeasurePoint(time, id, lat, lng));
+			points.add(new MeasurePoint(id, journyId, time, lat, lng));
 		}
 
 		rs.close();

@@ -65,7 +65,7 @@ class LineStringRouteCalculator extends RouteCalculator {
 				}
 				if (possiblePoints != Nil) {
 					val lngLat = possiblePoints.minBy(x => x._2)._1
-					resultList.add(new MeasurePoint(x.getTime, x.getJourneyId, lngLat))
+					resultList.add(new MeasurePoint(x.getId, x.getJourneyId, x.getTime, lngLat))
 				}
 			}
 			prevMeasurePoint = x
