@@ -37,7 +37,7 @@ public class BusBunchingMain {
 		path("/api/v1", () -> {
 			get("/journey/:id", new JourneyGetContext(settings), new JsonTransformer());
 			post("/journey", "application/json", new JourneyPostContext(settings));
-			post("/position", "application/json", new PositionContext(settings));
+			post("/journey/position", "application/json", new JurneyPositionContext(settings));
 			get("/route/:route", new RouteGetContext(settings), new JsonTransformer());
 			get("/route/geo/:id", new RouteGeoJsonGetContext(settings), new GeoJsonTransformer());
 			post("/route", "application/json", new RouteImportContext(settings));

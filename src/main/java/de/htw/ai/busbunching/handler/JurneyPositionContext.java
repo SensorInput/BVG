@@ -12,12 +12,12 @@ import spark.Route;
 import javax.servlet.http.HttpServletResponse;
 import java.sql.Connection;
 
-public class PositionContext implements Route {
+public class JurneyPositionContext implements Route {
 
 	private Settings settings;
 	private ObjectMapper objectMapper;
 
-	public PositionContext(Settings settings) {
+	public JurneyPositionContext(Settings settings) {
 		this.settings = settings;
 		this.objectMapper = new ObjectMapper();
 	}
