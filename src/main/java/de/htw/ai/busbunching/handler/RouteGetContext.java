@@ -27,7 +27,6 @@ public class RouteGetContext implements Route {
 		Connection connection = DatabaseUtils.createDatabaseConnection(settings);
 
 		String route = request.params("route");
-		response.type("application/json; charset=utf-8");
 
 		List<de.htw.ai.busbunching.model.Route> routes = new LinkedList<>();
 		for (RouteType type : RouteType.values()) {
@@ -37,12 +36,19 @@ public class RouteGetContext implements Route {
 				routes.addAll(databaseHandler.getRoutes(route));
 			}
 		}
-
-		for (de.htw.ai.busbunching.model.Route r : routes) {
-			System.out.println(RouteFactory.getHandler(r.getRouteType()).getRouteCalculator().calculateTotalRoute(r));
-		}
+//
+//		for (de.htw.ai.busbunching.model.Route r : routes) {
+//			System.out.println(RouteFactory.getHandler(r.getRouteType()).getRouteCalculator().calculateTotalRoute(r));
+//		}
 
 		connection.close();
+
+		if (routes.isEmpty()) {
+			response.status(404);
+			response.type("text/html; charset=utf-8");
+			return null; // Return 404 for empty route list
+		}
+		response.type("application/json; charset=utf-8");
 		return routes;
 	}
 }

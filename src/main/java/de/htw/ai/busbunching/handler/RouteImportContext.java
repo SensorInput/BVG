@@ -42,7 +42,7 @@ public class RouteImportContext implements spark.Route {
 		}
 
 		connection.close();
-		response.status(HttpServletResponse.SC_OK);
+		response.status(HttpServletResponse.SC_CREATED);
 		return null;
 	}
 }

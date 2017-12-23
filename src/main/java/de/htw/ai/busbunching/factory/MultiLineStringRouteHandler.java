@@ -52,7 +52,8 @@ public class MultiLineStringRouteHandler implements RouteHandler {
 		value.getProperties().put("@id", route.getOsmId());
 		value.getProperties().put("ref", route.getRef());
 		value.getProperties().put("name", route.getName());
-		value.getProperties().put("type", route.getType());
+		value.getProperties().put("route", route.getType());
+		value.getProperties().put("type", "route");
 		value.getProperties().put("network", route.getNetwork());
 		value.getProperties().put("operator", route.getOperator());
 		value.getProperties().put("from", route.getFrom());

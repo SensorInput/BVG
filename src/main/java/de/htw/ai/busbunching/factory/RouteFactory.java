@@ -10,7 +10,7 @@ public class RouteFactory {
 		} else if (routeType == RouteType.MULTILINE) {
 			return new MultiLineStringRouteHandler();
 		} else {
-			return null;
+			return new MultiLineStringRouteHandler(); // Default handler
 		}
 	}
 }

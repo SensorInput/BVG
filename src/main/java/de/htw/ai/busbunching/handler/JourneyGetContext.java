@@ -5,7 +5,6 @@ import de.htw.ai.busbunching.database.MeasurePointHandler;
 import de.htw.ai.busbunching.factory.RouteFactory;
 import de.htw.ai.busbunching.model.Journey;
 import de.htw.ai.busbunching.model.route.RouteType;
-import de.htw.ai.busbunching.route.MultiLineStringRouteCalculator;
 import de.htw.ai.busbunching.settings.Settings;
 import de.htw.ai.busbunching.utils.DatabaseUtils;
 import spark.Request;
@@ -32,20 +31,29 @@ public class JourneyGetContext implements Route {
 		MeasurePointHandler measurePointHandler = new MeasurePointHandler(connection);
 
 		long id = Long.valueOf(request.params("id"));
-		response.type("application/json; charset=utf-8");
 
 		Journey journey = handler.getJourney(id);
-		journey.setPoints(measurePointHandler.getMeasurePoints(journey.getId()));
+		if (journey != null) {
+			journey.setPoints(measurePointHandler.getMeasurePoints(journey.getId()));
 
-		final Optional<de.htw.ai.busbunching.model.Route> route = Stream.of(RouteType.values())
-				.map(type -> RouteFactory.getHandler(type).getDatabaseHandler(connection).getRoute(journey.getRouteId()))
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.findFirst();
+			final Optional<de.htw.ai.busbunching.model.Route> route = Stream.of(RouteType.values())
+					.map(type -> RouteFactory.getHandler(type).getDatabaseHandler(connection).getRoute(journey.getRouteId()))
+					.filter(Optional::isPresent)
+					.map(Optional::get)
+					.findFirst();
 
-		route.ifPresent(val -> journey.setPoints(new MultiLineStringRouteCalculator().smoothJourneyCoordinates(journey, val)));
-
+			route.ifPresent(val -> journey.setPoints(RouteFactory.getHandler(val.getRouteType())
+					.getRouteCalculator().smoothJourneyCoordinates(journey, val)));
+		}
 		connection.close();
-		return journey;
+
+		if (journey == null) {
+			response.type("text/html; charset=utf-8");
+			response.status(404);
+			return null;
+		} else {
+			response.type("application/json; charset=utf-8");
+			return journey;
+		}
 	}
 }

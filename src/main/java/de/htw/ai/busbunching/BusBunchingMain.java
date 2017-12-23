@@ -14,8 +14,10 @@ import java.nio.file.Paths;
 import static spark.Spark.*;
 
 public class BusBunchingMain {
+
+	private static Settings settings = null;
+
 	public static void main(String[] args) {
-		Settings settings = null;
 		try {
 			Path settingsPath = Paths.get("settings.properties");
 			if (Files.notExists(settingsPath)) {
@@ -32,11 +34,13 @@ public class BusBunchingMain {
 
 		port(4545);
 
-		get("/journey/:id", new JourneyGetContext(settings), new JsonTransformer());
-		post("/journey", "application/json", new JourneyPostContext(settings));
-		post("/position", "application/json", new PositionContext(settings));
-		get("/route/:route", new RouteGetContext(settings), new JsonTransformer());
-		get("/route/geo/:id", new RouteGeoJsonGetContext(settings), new GeoJsonTransformer());
-		post("/route", "application/json", new RouteImportContext(settings));
+		path("/api/v1", () -> {
+			get("/journey/:id", new JourneyGetContext(settings), new JsonTransformer());
+			post("/journey", "application/json", new JourneyPostContext(settings));
+			post("/position", "application/json", new PositionContext(settings));
+			get("/route/:route", new RouteGetContext(settings), new JsonTransformer());
+			get("/route/geo/:id", new RouteGeoJsonGetContext(settings), new GeoJsonTransformer());
+			post("/route", "application/json", new RouteImportContext(settings));
+		});
 	}
 }

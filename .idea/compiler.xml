@@ -7,9 +7,11 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="BusBunchingServer" />
+        <module name="BusbunchingServer" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="BusbunchingServer" target="1.8" />
       <module name="BusBunchingServer" target="1.8" />
     </bytecodeTargetLevel>
   </component>

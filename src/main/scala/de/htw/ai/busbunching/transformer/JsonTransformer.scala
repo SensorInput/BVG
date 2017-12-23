@@ -11,6 +11,10 @@ class JsonTransformer extends ResponseTransformer {
 	private val objectMapper = new ObjectMapper()
 
 	override def render(o: scala.Any): String = {
-		objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(o)
+		if (o == null) {
+			null
+		} else {
+			objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(o)
+		}
 	}
 }

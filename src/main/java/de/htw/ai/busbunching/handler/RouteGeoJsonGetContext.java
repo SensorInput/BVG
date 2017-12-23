@@ -1,6 +1,5 @@
 package de.htw.ai.busbunching.handler;
 
-import de.htw.ai.busbunching.database.route.CommonRouteHandler;
 import de.htw.ai.busbunching.factory.RouteFactory;
 import de.htw.ai.busbunching.model.route.RouteType;
 import de.htw.ai.busbunching.settings.Settings;
@@ -24,10 +23,8 @@ public class RouteGeoJsonGetContext implements Route {
 	@Override
 	public Object handle(Request request, Response response) throws Exception {
 		Connection connection = DatabaseUtils.createDatabaseConnection(settings);
-		CommonRouteHandler handler = new CommonRouteHandler(connection);
 
 		int routeId = Integer.valueOf(request.params("id"));
-		response.type("application/json; charset=utf-8");
 
 		final Optional<de.htw.ai.busbunching.model.Route> route = Stream.of(RouteType.values())
 				.map(type -> RouteFactory.getHandler(type).getDatabaseHandler(connection).getRoute(routeId))
@@ -35,7 +32,13 @@ public class RouteGeoJsonGetContext implements Route {
 				.map(Optional::get)
 				.findFirst();
 
-		return route.orElse(null);
-
+		if (route.isPresent()) {
+			response.type("application/json; charset=utf-8");
+			return route.get();
+		} else {
+			response.type("text/html; charset=utf-8");
+			response.status(404);
+			return null;
+		}
 	}
 }
