@@ -79,7 +79,7 @@ object DatabaseUtils {
 			  |) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;""".stripMargin)
 
 		createTable(
-			"""CREATE TABLE `MeasurePoint` (
+			"""CREATE TABLE IF NOT EXISTS `MeasurePoint` (
 			  |  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
 			  |  `journey_id` int(11) unsigned DEFAULT NULL,
 			  |  `time` bigint(20) DEFAULT NULL,
