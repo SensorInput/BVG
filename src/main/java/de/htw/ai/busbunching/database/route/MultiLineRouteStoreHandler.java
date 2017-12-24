@@ -1,5 +1,6 @@
 package de.htw.ai.busbunching.database.route;
 
+import de.htw.ai.busbunching.database.DatabaseHandler;
 import de.htw.ai.busbunching.geojson.GeoJsonMultilineStringConverter;
 import de.htw.ai.busbunching.model.Route;
 import de.htw.ai.busbunching.model.geometry.GeoMultiLineString;
@@ -10,7 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-public class MultiLineRouteStoreHandler implements RouteStoreHandler {
+public class MultiLineRouteStoreHandler extends DatabaseHandler implements RouteStoreHandler {
 
 	private Connection connection;
 
@@ -18,17 +19,22 @@ public class MultiLineRouteStoreHandler implements RouteStoreHandler {
 		this.connection = connection;
 	}
 
-	private void insertMultiLineString(MultiLineStringRoute line) throws SQLException {
-		PreparedStatement stmt = connection.prepareStatement("INSERT INTO Multiline VALUES (0, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-		stmt.setString(1, GeoJsonMultilineStringConverter.multiLineStringToString(line.getMultiLineString()));
-		stmt.setLong(2, line.getId());
+	private void insertMultiLineString(MultiLineStringRoute line) {
+		PreparedStatement stmt = null;
+		try {
+			stmt = connection.prepareStatement("INSERT INTO Multiline VALUES (0, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			stmt.setString(1, GeoJsonMultilineStringConverter.multiLineStringToString(line.getMultiLineString()));
+			stmt.setLong(2, line.getId());
 
-		stmt.executeUpdate();
-		stmt.close();
+			stmt.executeUpdate();
+			stmt.close();
+		} catch (SQLException e) {
+			closeResources(stmt, null);
+		}
 	}
 
 	@Override
-	public void save(Route route) throws SQLException {
+	public void save(Route route) {
 		CommonRouteHandler commonRouteHandler = new CommonRouteHandler(connection);
 		long id = commonRouteHandler.importLine(route);
 		route.setId(id);
@@ -36,36 +42,41 @@ public class MultiLineRouteStoreHandler implements RouteStoreHandler {
 	}
 
 	@Override
-	public List<Route> getRoutes(String ref) throws SQLException {
-		PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Route WHERE ref = ? AND geometry = \"MULTILINE\"");
-		stmt.setString(1, ref);
-
-		ResultSet rs = stmt.executeQuery();
-
+	public List<Route> getRoutes(String ref) {
 		List<Route> routes = new LinkedList<>();
-		while (rs.next()) {
-			long id = rs.getLong("id");
-			String osmId = rs.getString("@id");
-			String refFetched = rs.getString("ref");
-			String name = rs.getString("name");
-			String type = rs.getString("type");
-			String network = rs.getString("network");
-			String operator = rs.getString("operator");
-			String from = rs.getString("from");
-			String to = rs.getString("to");
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		try {
+			stmt = connection.prepareStatement("SELECT * FROM Route WHERE ref = ? AND geometry = \"MULTILINE\"");
+			stmt.setString(1, ref);
+
+			rs = stmt.executeQuery();
+
+			while (rs.next()) {
+				long id = rs.getLong("id");
+				String osmId = rs.getString("@id");
+				String refFetched = rs.getString("ref");
+				String name = rs.getString("name");
+				String type = rs.getString("type");
+				String network = rs.getString("network");
+				String operator = rs.getString("operator");
+				String from = rs.getString("from");
+				String to = rs.getString("to");
 
 
-			MultiLineStringRoute route = new MultiLineStringRoute(id, osmId, refFetched, name, type, network, operator, from, to);
+				MultiLineStringRoute route = new MultiLineStringRoute(id, osmId, refFetched, name, type, network, operator, from, to);
 
-			getMultiLineString(id).ifPresent(data -> {
-				GeoMultiLineString geoMultiLineString = GeoJsonMultilineStringConverter.stringToMultiLineString(data);
-				route.setMultiLineString(geoMultiLineString);
-			});
-			routes.add(route);
+				getMultiLineString(id).ifPresent(data -> {
+					GeoMultiLineString geoMultiLineString = GeoJsonMultilineStringConverter.stringToMultiLineString(data);
+					route.setMultiLineString(geoMultiLineString);
+				});
+				routes.add(route);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			closeResources(stmt, rs);
 		}
-
-		rs.close();
-		stmt.close();
 		return routes;
 	}
 
@@ -84,14 +95,7 @@ public class MultiLineRouteStoreHandler implements RouteStoreHandler {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
-			try {
-				if (rs != null)
-					rs.close();
-				if (stmt != null)
-					stmt.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			closeResources(stmt, rs);
 		}
 		return Optional.empty();
 	}
@@ -128,14 +132,7 @@ public class MultiLineRouteStoreHandler implements RouteStoreHandler {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
-			try {
-				if (rs != null)
-					rs.close();
-				if (stmt != null)
-					stmt.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			closeResources(stmt, rs);
 		}
 		return Optional.empty();
 	}

@@ -4,7 +4,7 @@ import de.htw.ai.busbunching.model.Journey;
 
 import java.sql.*;
 
-public class JourneyHandler {
+public class JourneyHandler extends DatabaseHandler {
 
 	private Connection connection;
 
@@ -12,27 +12,34 @@ public class JourneyHandler {
 		this.connection = connection;
 	}
 
-	public long insertJourney(Journey journey) throws SQLException {
-		PreparedStatement stmt = connection.prepareStatement("INSERT INTO Journey VALUES (0, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-		stmt.setLong(1, journey.getRouteId());
-		stmt.setTimestamp(2, journey.getStartTime());
-		stmt.setTimestamp(3, journey.getEndTime());
+	public long insertJourney(Journey journey) {
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
 
-		int affectedRows = stmt.executeUpdate();
+		try {
+			stmt = connection.prepareStatement("INSERT INTO Journey VALUES (0, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			stmt.setLong(1, journey.getRouteId());
+			stmt.setTimestamp(2, journey.getStartTime());
+			stmt.setTimestamp(3, journey.getEndTime());
 
-		if (affectedRows == 0) {
-			throw new SQLException("Creating user failed, no rows affected.");
-		}
+			int affectedRows = stmt.executeUpdate();
 
-		try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-			if (generatedKeys.next()) {
-				return generatedKeys.getLong(1);
+			if (affectedRows == 0) {
+				throw new SQLException("Creating user failed, no rows affected.");
+			}
+
+			rs = stmt.getGeneratedKeys();
+			if (rs.next()) {
+				return rs.getLong(1);
 			} else {
 				throw new SQLException("Creating Journey failed, no ID obtained.");
 			}
+		} catch (SQLException e) {
+			e.printStackTrace();
 		} finally {
-			stmt.close();
+			closeResources(stmt, rs);
 		}
+		return -1;
 	}
 
 	public Journey getJourney(long id) {

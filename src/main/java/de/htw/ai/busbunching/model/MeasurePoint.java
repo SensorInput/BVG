@@ -1,6 +1,5 @@
 package de.htw.ai.busbunching.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.htw.ai.busbunching.model.geometry.GeoLngLat;
 
 public class MeasurePoint {

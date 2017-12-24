@@ -31,10 +31,8 @@ public class RouteGetContext implements Route {
 		List<de.htw.ai.busbunching.model.Route> routes = new LinkedList<>();
 		for (RouteType type : RouteType.values()) {
 			RouteHandler handler = RouteFactory.getHandler(type);
-			if (handler != null) {
-				RouteStoreHandler databaseHandler = handler.getDatabaseHandler(connection);
-				routes.addAll(databaseHandler.getRoutes(route));
-			}
+			RouteStoreHandler databaseHandler = handler.getDatabaseHandler(connection);
+			routes.addAll(databaseHandler.getRoutes(route));
 		}
 //
 //		for (de.htw.ai.busbunching.model.Route r : routes) {
