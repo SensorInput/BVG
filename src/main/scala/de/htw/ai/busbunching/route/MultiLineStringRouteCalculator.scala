@@ -2,7 +2,7 @@ package de.htw.ai.busbunching.route
 
 import java.util
 
-import de.htw.ai.busbunching.model.geometry.{GeoLineString, GeoMultiLineString}
+import de.htw.ai.busbunching.model.geometry.{GeoLineString, GeoLngLat, GeoMultiLineString}
 import de.htw.ai.busbunching.model.route.MultiLineStringRoute
 import de.htw.ai.busbunching.model.{Journey, MeasurePoint, Route}
 
@@ -27,6 +27,17 @@ class MultiLineStringRouteCalculator extends RouteCalculator {
 		}
 	}
 
+	override def calculateProgressOnRoute(route: Route, geoLngLat: GeoLngLat): Double = {
+		route match {
+			case multiLine: MultiLineStringRoute =>
+				val lineString = getRelevantLineString(multiLine.getMultiLineString)
+				val lineStringRouteCalculator = new LineStringRouteCalculator
+				lineStringRouteCalculator.calculateProgressOnRoute(lineString, geoLngLat);
+			case _ =>
+				-1
+		}
+	}
+
 	private def getRelevantLineString(multiLineString: GeoMultiLineString): GeoLineString = {
 		val lines = asScalaBuffer(multiLineString.getLines)
 		val lineStringRouteCalculator = new LineStringRouteCalculator
@@ -35,8 +46,8 @@ class MultiLineStringRouteCalculator extends RouteCalculator {
 
 	override def smoothJourneyCoordinates(journey: Journey, route: Route): util.List[MeasurePoint] = {
 		route match {
-			case multiLine: MultiLineStringRoute =>
-				val lineString = getRelevantLineString(multiLine.getMultiLineString)
+			case multiLineStringRoute: MultiLineStringRoute =>
+				val lineString = getRelevantLineString(multiLineStringRoute.getMultiLineString)
 				val lineStringRouteCalculator = new LineStringRouteCalculator
 				lineStringRouteCalculator.smoothCoordinates(journey, asScalaBuffer(lineString.getCoordinates))
 			case _ =>

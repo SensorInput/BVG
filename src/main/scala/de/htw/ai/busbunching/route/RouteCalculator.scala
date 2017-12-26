@@ -5,16 +5,7 @@ import java.util
 import de.htw.ai.busbunching.model.geometry.GeoLngLat
 import de.htw.ai.busbunching.model.{Journey, MeasurePoint, Route}
 
-trait RouteCalculator {
-
-	/**
-	  * Calculates the route in meters.
-	  *
-	  * @param route route
-	  * @return distance in meters
-	  */
-	def calculateTotalRoute(route: Route): Double
-
+object RouteCalculator {
 	def calculateDistanceBetweenPoints(c1: GeoLngLat, c2: GeoLngLat): Double = {
 		getDistance(c1.getLat, c1.getLng, c2.getLat, c2.getLng)
 	}
@@ -38,7 +29,17 @@ trait RouteCalculator {
 		rad * 180 / Math.PI
 	}
 
-	def smoothJourneyCoordinates(journey: Journey, route: Route): util.List[MeasurePoint]
+	def isPointOnLine(x: GeoLngLat, y: GeoLngLat, point: GeoLngLat): Boolean = {
+		if (y.getLng - x.getLng != 0) {
+			val m = (y.getLat - x.getLat) / (y.getLng - x.getLng)
+			val n = x.getLat - m * x.getLng
+
+			return m * point.getLng + n == point.getLat
+		} else if (x.getLng == point.getLng) {
+			return true
+		}
+		false
+	}
 
 	// http://www.java2s.com/Code/Java/2D-Graphics-GUI/Returnsclosestpointonsegmenttopoint.htm
 	def getClosestPointOnSegment(start: GeoLngLat, end: GeoLngLat, point: GeoLngLat): (GeoLngLat, Double) = {
@@ -79,4 +80,19 @@ trait RouteCalculator {
 			null
 		}
 	}
+}
+
+trait RouteCalculator {
+
+	/**
+	  * Calculates the route in meters.
+	  *
+	  * @param route route
+	  * @return distance in meters
+	  */
+	def calculateTotalRoute(route: Route): Double
+
+	def calculateProgressOnRoute(route: Route, geoLngLat: GeoLngLat): Double
+
+	def smoothJourneyCoordinates(journey: Journey, route: Route): util.List[MeasurePoint]
 }

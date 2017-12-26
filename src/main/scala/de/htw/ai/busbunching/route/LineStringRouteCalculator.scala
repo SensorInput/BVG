@@ -31,7 +31,40 @@ class LineStringRouteCalculator extends RouteCalculator {
 		var result: Double = 0
 		for (elem <- coordinates.indices) {
 			if (elem + 1 < coordinates.size) {
-				result += calculateDistanceBetweenPoints(coordinates(elem), coordinates(elem + 1))
+				result += RouteCalculator.calculateDistanceBetweenPoints(coordinates(elem), coordinates(elem + 1))
+			}
+		}
+		result
+	}
+
+
+	override def calculateProgressOnRoute(route: Route, geoLngLat: GeoLngLat): Double = {
+		route match {
+			case lineStringRoute: LineStringRoute =>
+				calculateProgressOnRoute(lineStringRoute.getLineString, geoLngLat)
+			case _ =>
+				-1
+		}
+	}
+
+	def calculateProgressOnRoute(lineString: GeoLineString, geoLngLat: GeoLngLat): Double = {
+		val coordinates = asScalaBuffer(lineString.getCoordinates)
+		var result: Double = 0
+		import scala.util.control.Breaks._
+
+		breakable {
+			for (elem <- coordinates.indices) {
+				if (elem + 1 < coordinates.size) {
+					val x = coordinates(elem)
+					val y = coordinates(elem + 1)
+
+					if (RouteCalculator.isPointOnLine(x, y, geoLngLat)) {
+						result += RouteCalculator.calculateDistanceBetweenPoints(x, geoLngLat)
+						break()
+					} else {
+						result += RouteCalculator.calculateDistanceBetweenPoints(x, y)
+					}
+				}
 			}
 		}
 		result
@@ -51,13 +84,14 @@ class LineStringRouteCalculator extends RouteCalculator {
 		val resultList = new util.ArrayList[MeasurePoint]()
 		var prevMeasurePoint: MeasurePoint = null
 		journey.getPoints.forEach(x => {
-			if ((prevMeasurePoint != null && calculateDistanceBetweenPoints(prevMeasurePoint.getLngLat, x.getLngLat) > 0.05) || prevMeasurePoint == null) {
+			if ((prevMeasurePoint != null && RouteCalculator.calculateDistanceBetweenPoints(prevMeasurePoint.getLngLat, x.getLngLat) > 0.05)
+				|| prevMeasurePoint == null) {
 				var possiblePoints: List[(GeoLngLat, Double)] = Nil
 				for (elem <- coordinates.indices) {
 					if (elem + 1 < coordinates.size) {
 						val startPoint = coordinates(elem)
 						val endPoint = coordinates(elem + 1)
-						val nearestPoint = getClosestPointOnSegment(startPoint, endPoint, x.getLngLat)
+						val nearestPoint = RouteCalculator.getClosestPointOnSegment(startPoint, endPoint, x.getLngLat)
 						if (nearestPoint != null) {
 							possiblePoints = nearestPoint :: possiblePoints
 						}

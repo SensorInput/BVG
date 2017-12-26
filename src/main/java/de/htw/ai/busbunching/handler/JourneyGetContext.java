@@ -27,7 +27,6 @@ public class JourneyGetContext implements Route {
 	public Object handle(Request request, Response response) throws Exception {
 		Connection connection = DatabaseUtils.createDatabaseConnection(settings);
 		JourneyHandler handler = new JourneyHandler(connection);
-
 		MeasurePointHandler measurePointHandler = new MeasurePointHandler(connection);
 
 		long id = Long.valueOf(request.params("id"));
