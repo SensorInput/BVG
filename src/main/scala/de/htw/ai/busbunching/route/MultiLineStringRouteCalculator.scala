@@ -41,7 +41,12 @@ class MultiLineStringRouteCalculator extends RouteCalculator {
 
 	override def calculateRelativeVehiclePositions(route: Route, mainVehicle: Vehicle,
 												   vehicles: util.List[Vehicle]): util.List[VehicleRelativePosition] = {
-		null
+		vehicles.forEach(v => v.setPastedDistance(calculateProgressOnRoute(route, v.getPosition)))
+		mainVehicle.setPastedDistance(calculateProgressOnRoute(route, mainVehicle.getPosition))
+
+		asScalaBuffer(vehicles).map(v =>
+			new VehicleRelativePosition(v.getRef, v.getPosition, v.getPastedDistance - mainVehicle.getPastedDistance)
+		).toList.asJava
 	}
 
 	private def getRelevantLineString(multiLineString: GeoMultiLineString): GeoLineString = {
