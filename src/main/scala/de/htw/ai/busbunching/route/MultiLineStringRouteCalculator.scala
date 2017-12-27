@@ -41,9 +41,11 @@ class MultiLineStringRouteCalculator extends RouteCalculator {
 
 	override def calculateRelativeVehiclePositions(route: Route, mainVehicle: Vehicle,
 												   vehicles: util.List[Vehicle]): util.List[VehicleRelativePosition] = {
+		// Calculate pasted distance
 		vehicles.forEach(v => v.setPastedDistance(calculateProgressOnRoute(route, v.getPosition)))
 		mainVehicle.setPastedDistance(calculateProgressOnRoute(route, mainVehicle.getPosition))
 
+		// calculate relative distance
 		asScalaBuffer(vehicles).map(v =>
 			new VehicleRelativePosition(v.getRef, v.getPosition, v.getPastedDistance - mainVehicle.getPastedDistance)
 		).toList.asJava
@@ -55,12 +57,24 @@ class MultiLineStringRouteCalculator extends RouteCalculator {
 		lines.maxBy(lineStringRouteCalculator.calculateTotalRoute)
 	}
 
+
+	override def smoothVehiclePosition(position: GeoLngLat, route: Route): GeoLngLat = {
+		route match {
+			case multiLineStringRoute: MultiLineStringRoute =>
+				val lineString = getRelevantLineString(multiLineStringRoute.getMultiLineString)
+				val lineStringRouteCalculator = new LineStringRouteCalculator
+				lineStringRouteCalculator.smoothVehiclePosition(position, asScalaBuffer(lineString.getCoordinates))
+			case _ =>
+				null
+		}
+	}
+
 	override def smoothJourneyCoordinates(journey: Journey, route: Route): util.List[MeasurePoint] = {
 		route match {
 			case multiLineStringRoute: MultiLineStringRoute =>
 				val lineString = getRelevantLineString(multiLineStringRoute.getMultiLineString)
 				val lineStringRouteCalculator = new LineStringRouteCalculator
-				lineStringRouteCalculator.smoothCoordinates(journey, asScalaBuffer(lineString.getCoordinates))
+				lineStringRouteCalculator.smoothJourneyCoordinates(journey, asScalaBuffer(lineString.getCoordinates))
 			case _ =>
 				null
 		}

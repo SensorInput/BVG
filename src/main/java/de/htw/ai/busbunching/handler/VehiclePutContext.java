@@ -30,18 +30,20 @@ public class VehiclePutContext implements Route {
 		Connection connection = DatabaseUtils.createDatabaseConnection(settings);
 		VehicleHandler handler = new VehicleHandler(connection);
 
-
 		String ref = request.params("id");
+
 		Vehicle vehicle = objectMapper.readValue(request.bodyAsBytes(), Vehicle.class);
 		vehicle.setRef(ref);
-		boolean success = handler.update(vehicle);
 
-		final Optional<de.htw.ai.busbunching.model.Route> route = RouteStoreHandler.getRoute(vehicle.getRouteId(), connection);
-		route.ifPresent(val -> {
-			final RouteCalculator routeCalculator = RouteFactory.getHandler(val.getRouteType()).getRouteCalculator();
-			double distance = routeCalculator.calculateProgressOnRoute(val, vehicle.getPosition());
-			vehicle.setPastedDistance(distance);
-		});
+		if (vehicle.getPosition() != null) {
+			final Optional<de.htw.ai.busbunching.model.Route> route = RouteStoreHandler.getRoute(vehicle.getRouteId(), connection);
+			route.ifPresent(val -> {
+				final RouteCalculator routeCalculator = RouteFactory.getHandler(val.getRouteType()).getRouteCalculator();
+				vehicle.setPosition(routeCalculator.smoothVehiclePosition(vehicle.getPosition(), val));
+			});
+		}
+
+		boolean success = handler.update(vehicle);
 
 		connection.close();
 		if (success) {

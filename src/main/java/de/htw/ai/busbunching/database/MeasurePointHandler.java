@@ -1,6 +1,7 @@
 package de.htw.ai.busbunching.database;
 
 import de.htw.ai.busbunching.model.MeasurePoint;
+import de.htw.ai.busbunching.model.geometry.GeoLngLat;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -44,24 +45,24 @@ public class MeasurePointHandler extends DatabaseHandler {
 		return -1;
 	}
 
-	public List<MeasurePoint> getMeasurePoints(long journeyId) {
+	public List<MeasurePoint> getMeasurePoints(long requestId) {
 		List<MeasurePoint> points = new ArrayList<>();
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 
 		try {
 			stmt = connection.prepareStatement("SELECT * FROM MeasurePoint WHERE journey_id = ?");
-			stmt.setLong(1, journeyId);
+			stmt.setLong(1, requestId);
 
 			rs = stmt.executeQuery();
 
 			while (rs.next()) {
 				int id = rs.getInt("id");
-				int journyId = rs.getInt("journey_id");
-				double lat = rs.getDouble("lat");
+				int journeyId = rs.getInt("journey_id");
 				double lng = rs.getDouble("lng");
+				double lat = rs.getDouble("lat");
 				long time = rs.getLong("time");
-				points.add(new MeasurePoint(id, journyId, time, lat, lng));
+				points.add(new MeasurePoint(id, journeyId, time, new GeoLngLat(lng, lat)));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();

@@ -11,7 +11,7 @@ public class MeasurePoint {
 	public MeasurePoint() {
 	}
 
-	public MeasurePoint(long id, long journeyId, long time, double lat, double lng) {
+	public MeasurePoint(long id, long journeyId, long time, double lng, double lat) {
 		this(id, journeyId, time, new GeoLngLat(lng, lat));
 	}
 

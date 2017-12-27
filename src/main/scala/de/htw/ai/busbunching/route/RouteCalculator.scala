@@ -99,5 +99,7 @@ trait RouteCalculator {
 
 	def calculateRelativeVehiclePositions(route: Route, mainVehicle: Vehicle, vehicles: util.List[Vehicle]): util.List[VehicleRelativePosition]
 
+	def smoothVehiclePosition(position: GeoLngLat, route: Route): GeoLngLat
+
 	def smoothJourneyCoordinates(journey: Journey, route: Route): util.List[MeasurePoint]
 }

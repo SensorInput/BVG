@@ -74,43 +74,75 @@ class LineStringRouteCalculator extends RouteCalculator {
 
 	override def calculateRelativeVehiclePositions(route: Route, mainVehicle: Vehicle,
 												   vehicles: util.List[Vehicle]): util.List[VehicleRelativePosition] = {
-		return null;
+		// Calculate pasted distance
+		vehicles.forEach(v => v.setPastedDistance(calculateProgressOnRoute(route, v.getPosition)))
+		mainVehicle.setPastedDistance(calculateProgressOnRoute(route, mainVehicle.getPosition))
+
+		// calculate relative distance
+		asScalaBuffer(vehicles).map(v =>
+			new VehicleRelativePosition(v.getRef, v.getPosition, v.getPastedDistance - mainVehicle.getPastedDistance)
+		).toList.asJava
+	}
+
+
+	override def smoothVehiclePosition(position: GeoLngLat, route: Route): GeoLngLat = {
+		route match {
+			case lineStringRoute: LineStringRoute =>
+				val coordinates = asScalaBuffer(lineStringRoute.getLineString.getCoordinates)
+				smoothVehiclePosition(position, coordinates)
+			case _ =>
+				null
+		}
+	}
+
+	def smoothVehiclePosition(position: GeoLngLat, coordinates: mutable.Buffer[GeoLngLat]): GeoLngLat = {
+		smoothPoint(point = position, coordinates = coordinates)
 	}
 
 	override def smoothJourneyCoordinates(journey: Journey, route: Route): util.List[MeasurePoint] = {
 		route match {
 			case lineStringRoute: LineStringRoute =>
 				val coordinates = asScalaBuffer(lineStringRoute.getLineString.getCoordinates)
-				smoothCoordinates(journey, coordinates)
+				smoothJourneyCoordinates(journey, coordinates)
 			case _ =>
 				null
 		}
 	}
 
-	def smoothCoordinates(journey: Journey, coordinates: mutable.Buffer[GeoLngLat]): util.List[MeasurePoint] = {
+	def smoothJourneyCoordinates(journey: Journey, coordinates: mutable.Buffer[GeoLngLat]): util.List[MeasurePoint] = {
 		val resultList = new util.ArrayList[MeasurePoint]()
-		var prevMeasurePoint: MeasurePoint = null
+
+		var prevMeasurePoint: GeoLngLat = null
+
 		journey.getPoints.forEach(x => {
-			if ((prevMeasurePoint != null && RouteCalculator.calculateDistanceBetweenPoints(prevMeasurePoint.getLngLat, x.getLngLat) > 0.05)
-				|| prevMeasurePoint == null) {
-				var possiblePoints: List[(GeoLngLat, Double)] = Nil
-				for (elem <- coordinates.indices) {
-					if (elem + 1 < coordinates.size) {
-						val startPoint = coordinates(elem)
-						val endPoint = coordinates(elem + 1)
-						val nearestPoint = RouteCalculator.getClosestPointOnSegment(startPoint, endPoint, x.getLngLat)
-						if (nearestPoint != null) {
-							possiblePoints = nearestPoint :: possiblePoints
-						}
-					}
-				}
-				if (possiblePoints != Nil) {
-					val lngLat = possiblePoints.minBy(x => x._2)._1
-					resultList.add(new MeasurePoint(x.getId, x.getJourneyId, x.getTime, lngLat))
-				}
+			val result = smoothPoint(x.getLngLat, prevMeasurePoint, coordinates)
+			prevMeasurePoint = x.getLngLat
+			if (result != null) {
+				resultList.add(new MeasurePoint(x.getId, x.getJourneyId, x.getTime, result))
 			}
-			prevMeasurePoint = x
 		})
 		resultList
+	}
+
+	private def smoothPoint(point: GeoLngLat, previousPoint: GeoLngLat = null, coordinates: mutable.Buffer[GeoLngLat]): GeoLngLat = {
+		if ((previousPoint != null && RouteCalculator.calculateDistanceBetweenPoints(previousPoint, point) > 50) || previousPoint == null) {
+			var possiblePoints: List[(GeoLngLat, Double)] = Nil
+			for (elem <- coordinates.indices) {
+				if (elem + 1 < coordinates.size) {
+					val startPoint = coordinates(elem)
+					val endPoint = coordinates(elem + 1)
+					val nearestPoint = RouteCalculator.getClosestPointOnSegment(startPoint, endPoint, point)
+					if (nearestPoint != null) {
+						possiblePoints = nearestPoint :: possiblePoints
+					}
+				}
+			}
+			// Get closest segment to point
+			if (possiblePoints != Nil) {
+				val lngLat = possiblePoints.minBy(x => x._2)._1
+				return lngLat
+			}
+		}
+		null
 	}
 }
