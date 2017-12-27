@@ -57,9 +57,9 @@ public class BusBunchingMain {
 			get("/route/geo/:id", new RouteGeoJsonGetContext(settings), new GeoJsonTransformer());
 			post("/route", "application/json", new RouteImportContext(settings));
 
-			get("/vehicle/:id", new VehicleGetRequest(settings), new JsonTransformer());
-			post("/vehicle", "application/json", new VehiclePostRequest(settings), new JsonTransformer());
-			put("/vehicle/:id", "application/json", new VehiclePutRequest(settings), new JsonTransformer());
+			get("/vehicle/:id", new VehicleGetContext(settings), new JsonTransformer());
+			post("/vehicle", "application/json", new VehiclePostContext(settings), new JsonTransformer());
+			put("/vehicle/:id", "application/json", new VehiclePutContext(settings), new JsonTransformer());
 		});
 	}
 }

@@ -2,9 +2,9 @@ package de.htw.ai.busbunching.route
 
 import java.util
 
+import de.htw.ai.busbunching.model._
 import de.htw.ai.busbunching.model.geometry.{GeoLineString, GeoLngLat, GeoMultiLineString}
 import de.htw.ai.busbunching.model.route.MultiLineStringRoute
-import de.htw.ai.busbunching.model.{Journey, MeasurePoint, Route}
 
 import scala.collection.JavaConverters._
 
@@ -36,6 +36,12 @@ class MultiLineStringRouteCalculator extends RouteCalculator {
 			case _ =>
 				-1
 		}
+	}
+
+
+	override def calculateRelativeVehiclePositions(route: Route, mainVehicle: Vehicle,
+												   vehicles: util.List[Vehicle]): util.List[VehicleRelativePosition] = {
+		null
 	}
 
 	private def getRelevantLineString(multiLineString: GeoMultiLineString): GeoLineString = {

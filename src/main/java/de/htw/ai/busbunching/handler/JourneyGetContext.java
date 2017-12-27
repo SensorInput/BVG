@@ -2,9 +2,9 @@ package de.htw.ai.busbunching.handler;
 
 import de.htw.ai.busbunching.database.JourneyHandler;
 import de.htw.ai.busbunching.database.MeasurePointHandler;
+import de.htw.ai.busbunching.database.route.RouteStoreHandler;
 import de.htw.ai.busbunching.factory.RouteFactory;
 import de.htw.ai.busbunching.model.Journey;
-import de.htw.ai.busbunching.model.route.RouteType;
 import de.htw.ai.busbunching.settings.Settings;
 import de.htw.ai.busbunching.utils.DatabaseUtils;
 import spark.Request;
@@ -13,7 +13,6 @@ import spark.Route;
 
 import java.sql.Connection;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 public class JourneyGetContext implements Route {
 
@@ -35,11 +34,7 @@ public class JourneyGetContext implements Route {
 		if (journey != null) {
 			journey.setPoints(measurePointHandler.getMeasurePoints(journey.getId()));
 
-			final Optional<de.htw.ai.busbunching.model.Route> route = Stream.of(RouteType.values())
-					.map(type -> RouteFactory.getHandler(type).getDatabaseHandler(connection).getRoute(journey.getRouteId()))
-					.filter(Optional::isPresent)
-					.map(Optional::get)
-					.findFirst();
+			final Optional<de.htw.ai.busbunching.model.Route> route = RouteStoreHandler.getRoute(journey.getRouteId(), connection);
 
 			route.ifPresent(val -> journey.setPoints(RouteFactory.getHandler(val.getRouteType())
 					.getRouteCalculator().smoothJourneyCoordinates(journey, val)));

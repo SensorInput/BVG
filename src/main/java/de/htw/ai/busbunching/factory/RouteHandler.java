@@ -10,10 +10,8 @@ import java.sql.Connection;
 
 public interface RouteHandler {
 	Route convertRoute(Feature feature);
-
-	RouteStoreHandler getDatabaseHandler(Connection connection);
-
 	GeoJsonObject convertToGeoJson(Route route);
 
+	RouteStoreHandler getDatabaseHandler(Connection connection);
 	RouteCalculator getRouteCalculator();
 }

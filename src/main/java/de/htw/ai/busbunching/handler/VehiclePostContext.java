@@ -11,12 +11,12 @@ import spark.Route;
 
 import java.sql.Connection;
 
-public class VehiclePostRequest implements Route {
+public class VehiclePostContext implements Route {
 
 	private Settings settings;
 	private ObjectMapper objectMapper;
 
-	public VehiclePostRequest(Settings settings) {
+	public VehiclePostContext(Settings settings) {
 		this.settings = settings;
 		this.objectMapper = new ObjectMapper();
 	}

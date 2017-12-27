@@ -10,6 +10,7 @@ public class Vehicle {
 	private long routeId;
 	private long time;
 	private GeoLngLat position;
+	private double pastedDistance;
 
 	public Vehicle() {
 		this(null, 0);
@@ -69,6 +70,14 @@ public class Vehicle {
 
 	public void setPosition(GeoLngLat position) {
 		this.position = position;
+	}
+
+	public double getPastedDistance() {
+		return pastedDistance;
+	}
+
+	public void setPastedDistance(double pastedDistance) {
+		this.pastedDistance = pastedDistance;
 	}
 
 	@Override

@@ -2,9 +2,9 @@ package de.htw.ai.busbunching.route
 
 import java.util
 
+import de.htw.ai.busbunching.model._
 import de.htw.ai.busbunching.model.geometry.{GeoLineString, GeoLngLat}
 import de.htw.ai.busbunching.model.route.LineStringRoute
-import de.htw.ai.busbunching.model.{Journey, MeasurePoint, Route}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -50,6 +50,7 @@ class LineStringRouteCalculator extends RouteCalculator {
 	def calculateProgressOnRoute(lineString: GeoLineString, geoLngLat: GeoLngLat): Double = {
 		val coordinates = asScalaBuffer(lineString.getCoordinates)
 		var result: Double = 0
+
 		import scala.util.control.Breaks._
 
 		breakable {
@@ -68,6 +69,12 @@ class LineStringRouteCalculator extends RouteCalculator {
 			}
 		}
 		result
+	}
+
+
+	override def calculateRelativeVehiclePositions(route: Route, mainVehicle: Vehicle,
+												   vehicles: util.List[Vehicle]): util.List[VehicleRelativePosition] = {
+		return null;
 	}
 
 	override def smoothJourneyCoordinates(journey: Journey, route: Route): util.List[MeasurePoint] = {

@@ -2,8 +2,8 @@ package de.htw.ai.busbunching.route
 
 import java.util
 
+import de.htw.ai.busbunching.model._
 import de.htw.ai.busbunching.model.geometry.GeoLngLat
-import de.htw.ai.busbunching.model.{Journey, MeasurePoint, Route}
 
 object RouteCalculator {
 	def calculateDistanceBetweenPoints(c1: GeoLngLat, c2: GeoLngLat): Double = {
@@ -11,13 +11,22 @@ object RouteCalculator {
 	}
 
 	// Source: https://www.htmlgoodies.com/beyond/javascript/calculate-the-distance-between-two-points-in-your-web-apps.html
+	/**
+	  * Calculate distance between two geo points in meters.
+	  *
+	  * @param lat1 latitude x
+	  * @param lon1 longitude x
+	  * @param lat2 latitude y
+	  * @param lon2 longitude y
+	  * @return distance in meters
+	  */
 	private def getDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double = {
 		val theta: Double = lon1 - lon2
 		var dist: Double = Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2)) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.cos(deg2rad(theta))
 		dist = Math.acos(dist)
 		dist = rad2deg(dist)
 		dist = dist * 60 * 1.1515
-		dist * 1.609344
+		dist * 1.609344 * 1000
 	}
 
 	private def deg2rad(deg: Double): Double = {
@@ -54,18 +63,12 @@ object RouteCalculator {
 	/**
 	  * Returns closest point on segment to point
 	  *
-	  * @param sx1
-	  * segment x coord 1
-	  * @param sy1
-	  * segment y coord 1
-	  * @param sx2
-	  * segment x coord 2
-	  * @param sy2
-	  * segment y coord 2
-	  * @param px
-	  * point x coord
-	  * @param py
-	  * point y coord
+	  * @param sx1 segment x coord 1
+	  * @param sy1 segment y coord 1
+	  * @param sx2 segment x coord 2
+	  * @param sy2 segment y coord 2
+	  * @param px  point x coord
+	  * @param py  point y coord
 	  * @return closets point on segment to point
 	  */
 	def getClosestPointOnSegment(sx1: Double, sy1: Double, sx2: Double, sy2: Double, px: Double, py: Double): GeoLngLat = {
@@ -93,6 +96,8 @@ trait RouteCalculator {
 	def calculateTotalRoute(route: Route): Double
 
 	def calculateProgressOnRoute(route: Route, geoLngLat: GeoLngLat): Double
+
+	def calculateRelativeVehiclePositions(route: Route, mainVehicle: Vehicle, vehicles: util.List[Vehicle]): util.List[VehicleRelativePosition]
 
 	def smoothJourneyCoordinates(journey: Journey, route: Route): util.List[MeasurePoint]
 }

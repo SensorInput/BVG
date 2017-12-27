@@ -4,6 +4,8 @@ import de.htw.ai.busbunching.model.Vehicle;
 import de.htw.ai.busbunching.model.geometry.GeoLngLat;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class VehicleHandler extends DatabaseHandler {
@@ -39,6 +41,33 @@ public class VehicleHandler extends DatabaseHandler {
 			closeResources(stmt, rs);
 		}
 		return Optional.empty();
+	}
+
+	public List<Vehicle> getVehicles(long routeId) {
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		List<Vehicle> vehicles = new ArrayList<>();
+		try {
+			stmt = connection.prepareStatement("SELECT * FROM Vehicle WHERE route_id = ?");
+			stmt.setLong(1, routeId);
+
+			rs = stmt.executeQuery();
+			while (rs.next()) {
+				long id = rs.getLong("id");
+				String ref = rs.getString("ref");
+
+				long time = rs.getLong("time");
+				double lng = rs.getDouble("lng");
+				double lat = rs.getDouble("lat");
+
+				vehicles.add(new Vehicle(id, ref, routeId, time, new GeoLngLat(lng, lat)));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			closeResources(stmt, rs);
+		}
+		return vehicles;
 	}
 
 	public long insert(Vehicle vehicle) {
