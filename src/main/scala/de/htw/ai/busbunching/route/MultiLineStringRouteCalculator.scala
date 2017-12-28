@@ -38,17 +38,15 @@ class MultiLineStringRouteCalculator extends RouteCalculator {
 		}
 	}
 
-
-	override def calculateRelativeVehiclePositions(route: Route, mainVehicle: Vehicle,
-												   vehicles: util.List[Vehicle]): util.List[VehicleRelativePosition] = {
-		// Calculate pasted distance
-		vehicles.forEach(v => v.setPastedDistance(calculateProgressOnRoute(route, v.getPosition)))
-		mainVehicle.setPastedDistance(calculateProgressOnRoute(route, mainVehicle.getPosition))
-
-		// calculate relative distance
-		asScalaBuffer(vehicles).map(v =>
-			new VehicleRelativePosition(v.getRef, v.getPosition, v.getPastedDistance - mainVehicle.getPastedDistance)
-		).toList.asJava
+	override def calculateTimeDistance(start: GeoLngLat, end: GeoLngLat, journeys: util.List[Journey], route: Route): Double = {
+		route match {
+			case multiLine: MultiLineStringRoute =>
+				val lineString = getRelevantLineString(multiLine.getMultiLineString)
+				val lineStringRouteCalculator = new LineStringRouteCalculator
+				lineStringRouteCalculator.calculateTimeDistance(start, end, journeys, lineString)
+			case _ =>
+				-1
+		}
 	}
 
 	private def getRelevantLineString(multiLineString: GeoMultiLineString): GeoLineString = {

@@ -3,6 +3,8 @@ package de.htw.ai.busbunching.database;
 import de.htw.ai.busbunching.model.Journey;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JourneyHandler extends DatabaseHandler {
 
@@ -61,5 +63,32 @@ public class JourneyHandler extends DatabaseHandler {
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public List<Journey> getJourneysByRouteId(long routeId) {
+		List<Journey> journeys = new ArrayList<>();
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			stmt = connection.prepareStatement("SELECT * FROM Journey WHERE route_id = ?");
+			stmt.setLong(1, routeId);
+
+			rs = stmt.executeQuery();
+
+			while (rs.next()) {
+				long id = rs.getLong("id");
+				Timestamp startTime = rs.getTimestamp("startTime");
+				Timestamp endTime = rs.getTimestamp("endTime");
+
+				journeys.add(new Journey(id, routeId, startTime, endTime));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			closeResources(stmt, rs);
+		}
+		return journeys;
+
 	}
 }

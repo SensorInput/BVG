@@ -8,11 +8,13 @@ public class VehicleRelativePosition {
 
 	private final GeoLngLat geoLngLat;
 	private final double relativeDistance;
+	private final double relativeTimeDistance;
 
-	public VehicleRelativePosition(String ref, GeoLngLat geoLngLat, double relativeDistance) {
+	public VehicleRelativePosition(String ref, GeoLngLat geoLngLat, double relativeDistance, double relativeTimeDistance) {
 		this.ref = ref;
 		this.geoLngLat = geoLngLat;
 		this.relativeDistance = relativeDistance;
+		this.relativeTimeDistance = relativeTimeDistance;
 	}
 
 	public String getRef() {
@@ -25,5 +27,9 @@ public class VehicleRelativePosition {
 
 	public double getRelativeDistance() {
 		return relativeDistance;
+	}
+
+	public double getRelativeTimeDistance() {
+		return relativeTimeDistance;
 	}
 }

@@ -11,6 +11,11 @@ import scala.collection.mutable
 
 
 class LineStringRouteCalculator extends RouteCalculator {
+
+	implicit class ImplDoubleVecUtils(values: Seq[Double]) {
+		def mean = values.sum / values.length
+	}
+
 	/**
 	  * Calculates the route in meters.
 	  *
@@ -71,19 +76,51 @@ class LineStringRouteCalculator extends RouteCalculator {
 		result
 	}
 
-
-	override def calculateRelativeVehiclePositions(route: Route, mainVehicle: Vehicle,
-												   vehicles: util.List[Vehicle]): util.List[VehicleRelativePosition] = {
-		// Calculate pasted distance
-		vehicles.forEach(v => v.setPastedDistance(calculateProgressOnRoute(route, v.getPosition)))
-		mainVehicle.setPastedDistance(calculateProgressOnRoute(route, mainVehicle.getPosition))
-
-		// calculate relative distance
-		asScalaBuffer(vehicles).map(v =>
-			new VehicleRelativePosition(v.getRef, v.getPosition, v.getPastedDistance - mainVehicle.getPastedDistance)
-		).toList.asJava
+	override def calculateTimeDistance(start: GeoLngLat, end: GeoLngLat, journeys: util.List[Journey], route: Route): Double = {
+		route match {
+			case lineStringRoute: LineStringRoute =>
+				calculateTimeDistance(start, end, journeys, lineStringRoute.getLineString)
+			case _ =>
+				-1
+		}
 	}
 
+	def calculateTimeDistance(start: GeoLngLat, end: GeoLngLat, journeys: util.List[Journey], lineString: GeoLineString): Double = {
+		asScalaBuffer(journeys)
+			.map(journey => calculateTimeDistance(start, end, journey, lineString))
+			.mean
+	}
+
+	private def calculateTimeDistance(start: GeoLngLat, end: GeoLngLat, journey: Journey, lineString: GeoLineString): Double = {
+		if (start == end) {
+			0
+		} else {
+			val startPoint = findTimeStartPoint(start, journey, lineString)
+			val endPoint = findTimeEndPoint(end, journey, lineString)
+
+			Math.abs(startPoint.getTime - endPoint.getTime)
+		}
+	}
+
+	private def findTimeStartPoint(point: GeoLngLat, journey: Journey, lineString: GeoLineString): MeasurePoint = {
+		val distancePoint = calculateProgressOnRoute(lineString, point)
+		val measurePoints = asScalaBuffer(journey.getPoints)
+
+		val closetedPoint = measurePoints.map(point => (calculateProgressOnRoute(lineString, point.getLngLat), point))
+			.filter(p => p._1 > distancePoint)
+			.minBy(p => p._1)
+		closetedPoint._2
+	}
+
+	private def findTimeEndPoint(point: GeoLngLat, journey: Journey, lineString: GeoLineString): MeasurePoint = {
+		val distancePoint = calculateProgressOnRoute(lineString, point)
+		val measurePoints = asScalaBuffer(journey.getPoints)
+
+		val closetedPoint = measurePoints.map(point => (calculateProgressOnRoute(lineString, point.getLngLat), point))
+			.filter(p => p._1 < distancePoint)
+			.maxBy(p => p._1)
+		closetedPoint._2
+	}
 
 	override def smoothVehiclePosition(position: GeoLngLat, route: Route): GeoLngLat = {
 		route match {

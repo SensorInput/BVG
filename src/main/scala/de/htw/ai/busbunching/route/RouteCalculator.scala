@@ -5,7 +5,10 @@ import java.util
 import de.htw.ai.busbunching.model._
 import de.htw.ai.busbunching.model.geometry.GeoLngLat
 
+import scala.collection.JavaConverters._
+
 object RouteCalculator {
+
 	def calculateDistanceBetweenPoints(c1: GeoLngLat, c2: GeoLngLat): Double = {
 		getDistance(c1.getLat, c1.getLng, c2.getLat, c2.getLng)
 	}
@@ -97,7 +100,24 @@ trait RouteCalculator {
 
 	def calculateProgressOnRoute(route: Route, geoLngLat: GeoLngLat): Double
 
-	def calculateRelativeVehiclePositions(route: Route, mainVehicle: Vehicle, vehicles: util.List[Vehicle]): util.List[VehicleRelativePosition]
+	def calculateRelativeVehiclePositions(route: Route, mainVehicle: Vehicle, vehicles: util.List[Vehicle], journeys: util.List[Journey]): util.List[VehicleRelativePosition] = {
+		// Calculate pasted distance
+		vehicles.forEach(v => v.setPastedDistance(calculateProgressOnRoute(route, v.getPosition)))
+		mainVehicle.setPastedDistance(calculateProgressOnRoute(route, mainVehicle.getPosition))
+
+		// calculate relative distance
+		asScalaBuffer(vehicles).map(v => {
+			// Calculate time distance
+			val timeDistance = calculateTimeDistance(v.getPosition, mainVehicle.getPosition, journeys, route)
+
+			// Calculate way distance
+			val wayDistance = v.getPastedDistance - mainVehicle.getPastedDistance
+
+			new VehicleRelativePosition(v.getRef, v.getPosition, wayDistance, timeDistance)
+		}).toList.asJava
+	}
+
+	def calculateTimeDistance(start: GeoLngLat, end: GeoLngLat, journeys: util.List[Journey], route: Route): Double
 
 	def smoothVehiclePosition(position: GeoLngLat, route: Route): GeoLngLat
 
