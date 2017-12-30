@@ -13,7 +13,7 @@ import scala.collection.mutable
 class LineStringRouteCalculator extends RouteCalculator {
 
 	implicit class ImplDoubleVecUtils(values: Seq[Double]) {
-		def mean = values.sum / values.length
+		def mean: Double = values.sum / values.length
 	}
 
 	/**
@@ -87,6 +87,7 @@ class LineStringRouteCalculator extends RouteCalculator {
 
 	def calculateTimeDistance(start: GeoLngLat, end: GeoLngLat, journeys: util.List[Journey], lineString: GeoLineString): Double = {
 		asScalaBuffer(journeys)
+			.filter(journey => !journey.getPoints.isEmpty)
 			.map(journey => calculateTimeDistance(start, end, journey, lineString))
 			.mean
 	}
@@ -95,31 +96,20 @@ class LineStringRouteCalculator extends RouteCalculator {
 		if (start == end) {
 			0
 		} else {
-			val startPoint = findTimeStartPoint(start, journey, lineString)
-			val endPoint = findTimeEndPoint(end, journey, lineString)
+			val startPoint = findClosestPointOnJourney(start, journey, lineString)
+			val endPoint = findClosestPointOnJourney(end, journey, lineString)
 
 			Math.abs(startPoint.getTime - endPoint.getTime)
 		}
 	}
 
-	private def findTimeStartPoint(point: GeoLngLat, journey: Journey, lineString: GeoLineString): MeasurePoint = {
+	private def findClosestPointOnJourney(point: GeoLngLat, journey: Journey, lineString: GeoLineString): MeasurePoint = {
 		val distancePoint = calculateProgressOnRoute(lineString, point)
 		val measurePoints = asScalaBuffer(journey.getPoints)
 
-		val closetedPoint = measurePoints.map(point => (calculateProgressOnRoute(lineString, point.getLngLat), point))
-			.filter(p => p._1 > distancePoint)
-			.minBy(p => p._1)
-		closetedPoint._2
-	}
-
-	private def findTimeEndPoint(point: GeoLngLat, journey: Journey, lineString: GeoLineString): MeasurePoint = {
-		val distancePoint = calculateProgressOnRoute(lineString, point)
-		val measurePoints = asScalaBuffer(journey.getPoints)
-
-		val closetedPoint = measurePoints.map(point => (calculateProgressOnRoute(lineString, point.getLngLat), point))
-			.filter(p => p._1 < distancePoint)
-			.maxBy(p => p._1)
-		closetedPoint._2
+		val closestPoint = measurePoints.map(point => (calculateProgressOnRoute(lineString, point.getLngLat), point))
+			.minBy(p => Math.abs(p._1 - distancePoint))
+		closestPoint._2
 	}
 
 	override def smoothVehiclePosition(position: GeoLngLat, route: Route): GeoLngLat = {

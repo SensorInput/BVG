@@ -114,7 +114,7 @@ trait RouteCalculator {
 			val wayDistance = v.getPastedDistance - mainVehicle.getPastedDistance
 
 			new VehicleRelativePosition(v.getRef, v.getPosition, wayDistance, timeDistance)
-		}).toList.asJava
+		}).sortWith(_.getRelativeDistance < _.getRelativeDistance).toList.asJava
 	}
 
 	def calculateTimeDistance(start: GeoLngLat, end: GeoLngLat, journeys: util.List[Journey], route: Route): Double

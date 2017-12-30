@@ -16,7 +16,6 @@ import spark.Response;
 import spark.Route;
 
 import java.sql.Connection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,7 +55,6 @@ public class VehicleListContext implements Route {
 				}
 
 				final List<VehicleRelativePosition> positions = routeCalculator.calculateRelativeVehiclePositions(route, mainVehicle, vehicles, journeys);
-				positions.sort(Comparator.comparingDouble(VehicleRelativePosition::getRelativeDistance));
 				response.type("application/json; charset=utf-8");
 				return positions;
 			}
