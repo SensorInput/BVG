@@ -6,22 +6,22 @@ public abstract class Route {
 
 	private long id;
 
-	private String osmId;
+	private final String osmId;
 
 	/**
 	 * The ref describes the line number of a public transport line. (e.g. M17, 165, X11, TXL)
 	 */
-	private String ref;
-	private String name;
-	private String type;
+	private final String ref;
+	private final String name;
+	private final String type;
 
-	private String network;
-	private String operator;
+	private final String network;
+	private final String operator;
 
-	private String from;
-	private String to;
+	private final String from;
+	private final String to;
 
-	private RouteType routeType;
+	private final RouteType routeType;
 
 	public Route(String osmId, String ref, String name, String type, String network,
 				 String operator, String from, String to, RouteType routeType) {

@@ -1,5 +1,7 @@
 package de.htw.ai.busbunching.handler;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.htw.ai.busbunching.factory.RouteFactory;
 import de.htw.ai.busbunching.factory.RouteHandler;
@@ -17,6 +19,9 @@ import java.sql.Connection;
 
 public class RouteImportContext implements spark.Route {
 
+	private static final String PROPERTY_TYPE = "type";
+	private static final String ROUTE = "route";
+
 	private Settings settings;
 
 	public RouteImportContext(Settings settings) {
@@ -25,24 +30,29 @@ public class RouteImportContext implements spark.Route {
 
 	@Override
 	public Object handle(Request request, Response response) throws Exception {
-		Connection connection = DatabaseUtils.createDatabaseConnection(settings);
+		try (Connection connection = DatabaseUtils.createDatabaseConnection(settings)) {
+			FeatureCollection featureCollection = new ObjectMapper().readValue(request.bodyAsBytes(), FeatureCollection.class);
 
-		FeatureCollection featureCollection = new ObjectMapper().readValue(request.bodyAsBytes(), FeatureCollection.class);
-		for (Feature feature : featureCollection.getFeatures()) {
-			if (feature.getProperties().containsKey("type") && feature.getProperties().get("type").equals("route")) {
-				final RouteType routeType = RouteType.getRouteType(feature);
+			for (Feature feature : featureCollection.getFeatures()) {
+				if (feature.getProperties().containsKey(PROPERTY_TYPE) && feature.getProperties().get(PROPERTY_TYPE).equals(ROUTE)) {
+					final RouteType routeType = RouteType.getRouteType(feature);
 
-				final RouteHandler handler = RouteFactory.getHandler(routeType);
-				Route line = handler.convertRoute(feature);
-				if (line != null) {
-					System.out.printf("Import Route: %s into database\n", line.getRef());
-					handler.getDatabaseHandler(connection).save(line);
+					if (routeType != null) {
+						final RouteHandler handler = RouteFactory.getHandler(routeType);
+						final Route line = handler.convertRoute(feature);
+						if (line != null) {
+							System.out.printf("Import Route: %s into database\n", line.getRef());
+							handler.getDatabaseHandler(connection).save(line);
+						}
+					}
 				}
 			}
+			response.status(HttpServletResponse.SC_CREATED);
+		} catch (JsonMappingException | JsonParseException e) {
+			e.printStackTrace();
+			response.status(HttpServletResponse.SC_BAD_REQUEST);
+			return e.getMessage();
 		}
-
-		connection.close();
-		response.status(HttpServletResponse.SC_CREATED);
 		return null;
 	}
 }

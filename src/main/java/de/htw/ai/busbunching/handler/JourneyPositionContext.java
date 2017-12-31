@@ -1,5 +1,7 @@
 package de.htw.ai.busbunching.handler;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.htw.ai.busbunching.database.MeasurePointHandler;
 import de.htw.ai.busbunching.model.MeasurePoint;
@@ -12,12 +14,12 @@ import spark.Route;
 import javax.servlet.http.HttpServletResponse;
 import java.sql.Connection;
 
-public class JurneyPositionContext implements Route {
+public class JourneyPositionContext implements Route {
 
 	private Settings settings;
 	private ObjectMapper objectMapper;
 
-	public JurneyPositionContext(Settings settings) {
+	public JourneyPositionContext(Settings settings) {
 		this.settings = settings;
 		this.objectMapper = new ObjectMapper();
 	}
@@ -27,12 +29,24 @@ public class JurneyPositionContext implements Route {
 		Connection connection = DatabaseUtils.createDatabaseConnection(settings);
 		MeasurePointHandler measurePointHandler = new MeasurePointHandler(connection);
 
-		MeasurePoint measurePoint = objectMapper.readValue(request.bodyAsBytes(), MeasurePoint.class);
-		long id = measurePointHandler.importMeasurePoint(measurePoint);
-		connection.close();
+		try {
+			MeasurePoint measurePoint = objectMapper.readValue(request.bodyAsBytes(), MeasurePoint.class);
+			long id = measurePointHandler.importMeasurePoint(measurePoint);
 
-		response.status(HttpServletResponse.SC_CREATED);
-		return id;
+			if (id != -1) {
+				response.status(HttpServletResponse.SC_CREATED);
+				return id;
+			} else {
+				response.status(HttpServletResponse.SC_BAD_REQUEST);
+				return "Bad payload for MeasurePoint";
+			}
+		} catch (JsonParseException | JsonMappingException e) {
+			e.printStackTrace();
+			response.status(HttpServletResponse.SC_BAD_REQUEST);
+			return e.getMessage();
+		} finally {
+			connection.close();
+		}
 	}
 
 }

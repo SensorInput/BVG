@@ -5,16 +5,17 @@ import de.htw.ai.busbunching.database.MeasurePointHandler;
 import de.htw.ai.busbunching.database.route.RouteStoreHandler;
 import de.htw.ai.busbunching.factory.RouteFactory;
 import de.htw.ai.busbunching.model.Journey;
+import de.htw.ai.busbunching.model.Route;
 import de.htw.ai.busbunching.settings.Settings;
 import de.htw.ai.busbunching.utils.DatabaseUtils;
 import spark.Request;
 import spark.Response;
-import spark.Route;
 
+import javax.servlet.http.HttpServletResponse;
 import java.sql.Connection;
 import java.util.Optional;
 
-public class JourneyGetContext implements Route {
+public class JourneyGetContext implements spark.Route {
 
 	private Settings settings;
 
@@ -28,26 +29,32 @@ public class JourneyGetContext implements Route {
 		JourneyHandler handler = new JourneyHandler(connection);
 		MeasurePointHandler measurePointHandler = new MeasurePointHandler(connection);
 
-		long id = Long.valueOf(request.params("id"));
+		final String idParam = request.params("id");
+		try {
+			long id = Long.valueOf(idParam);
 
-		Journey journey = handler.getJourney(id);
-		if (journey != null) {
-			journey.setPoints(measurePointHandler.getMeasurePoints(journey.getId()));
+			Journey journey = handler.getJourney(id);
+			if (journey != null) {
+				journey.setPoints(measurePointHandler.getMeasurePoints(journey.getId()));
 
-			final Optional<de.htw.ai.busbunching.model.Route> route = RouteStoreHandler.getRoute(journey.getRouteId(), connection);
+				final Optional<Route> route = RouteStoreHandler.getRoute(journey.getRouteId(), connection);
+				route.ifPresent(val -> journey.setPoints(RouteFactory.getHandler(val.getRouteType())
+						.getRouteCalculator().smoothJourneyCoordinates(journey, val)));
+			}
+			connection.close();
 
-			route.ifPresent(val -> journey.setPoints(RouteFactory.getHandler(val.getRouteType())
-					.getRouteCalculator().smoothJourneyCoordinates(journey, val)));
-		}
-		connection.close();
-
-		if (journey == null) {
+			if (journey == null) {
+				response.type("text/html; charset=utf-8");
+				response.status(HttpServletResponse.SC_NOT_FOUND);
+				return null;
+			} else {
+				response.type("application/json; charset=utf-8");
+				return journey;
+			}
+		} catch (NumberFormatException e) {
 			response.type("text/html; charset=utf-8");
-			response.status(404);
-			return null;
-		} else {
-			response.type("application/json; charset=utf-8");
-			return journey;
+			response.status(HttpServletResponse.SC_BAD_REQUEST);
+			return String.format("'%s' is not a valid number", idParam);
 		}
 	}
 }

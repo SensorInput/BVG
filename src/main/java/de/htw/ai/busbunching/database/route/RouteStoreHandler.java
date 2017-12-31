@@ -5,15 +5,14 @@ import de.htw.ai.busbunching.model.Route;
 import de.htw.ai.busbunching.model.route.RouteType;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface RouteStoreHandler {
-	void save(Route route) throws SQLException;
+	void save(Route route);
 
-	List<Route> getRoutes(String ref) throws SQLException;
+	List<Route> getRoutes(String ref);
 
 	Optional<Route> getRoute(long id);
 

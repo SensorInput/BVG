@@ -1,18 +1,17 @@
 package de.htw.ai.busbunching.handler;
 
-import de.htw.ai.busbunching.factory.RouteFactory;
-import de.htw.ai.busbunching.model.route.RouteType;
+import de.htw.ai.busbunching.database.route.RouteStoreHandler;
+import de.htw.ai.busbunching.model.Route;
 import de.htw.ai.busbunching.settings.Settings;
 import de.htw.ai.busbunching.utils.DatabaseUtils;
 import spark.Request;
 import spark.Response;
-import spark.Route;
 
+import javax.servlet.http.HttpServletResponse;
 import java.sql.Connection;
 import java.util.Optional;
-import java.util.stream.Stream;
 
-public class RouteGeoJsonGetContext implements Route {
+public class RouteGeoJsonGetContext implements spark.Route {
 
 	private Settings settings;
 
@@ -22,23 +21,24 @@ public class RouteGeoJsonGetContext implements Route {
 
 	@Override
 	public Object handle(Request request, Response response) throws Exception {
-		Connection connection = DatabaseUtils.createDatabaseConnection(settings);
+		final String idParam = request.params("id");
 
-		int routeId = Integer.valueOf(request.params("id"));
+		try (Connection connection = DatabaseUtils.createDatabaseConnection(settings)) {
+			long routeId = Long.valueOf(idParam);
+			final Optional<Route> route = RouteStoreHandler.getRoute(routeId, connection);
 
-		final Optional<de.htw.ai.busbunching.model.Route> route = Stream.of(RouteType.values())
-				.map(type -> RouteFactory.getHandler(type).getDatabaseHandler(connection).getRoute(routeId))
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.findFirst();
-
-		if (route.isPresent()) {
-			response.type("application/json; charset=utf-8");
-			return route.get();
-		} else {
+			if (route.isPresent()) {
+				response.type("application/json; charset=utf-8");
+				return route.get();
+			} else {
+				response.status(HttpServletResponse.SC_NOT_FOUND);
+				response.type("text/html; charset=utf-8");
+				return null;
+			}
+		} catch (NumberFormatException e) {
 			response.type("text/html; charset=utf-8");
-			response.status(404);
-			return null;
+			response.status(HttpServletResponse.SC_BAD_REQUEST);
+			return String.format("'%s' is not a valid number", idParam);
 		}
 	}
 }

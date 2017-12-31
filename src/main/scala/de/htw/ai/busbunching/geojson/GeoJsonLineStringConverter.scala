@@ -19,8 +19,8 @@ object GeoJsonLineStringConverter {
 	}
 
 	def convertLineStringToGeoJson(value: GeoLineString): LineString = {
-		val coords = asScalaBuffer(value.getCoordinates)
-		val array = coords.map(point => new LngLatAlt(point.getLng, point.getLat))
+		val coordinates = asScalaBuffer(value.getCoordinates)
+		val array = coordinates.map(point => new LngLatAlt(point.getLng, point.getLat))
 		new LineString(array.toArray: _*)
 	}
 

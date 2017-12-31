@@ -6,6 +6,7 @@ import de.htw.ai.busbunching.model._
 import de.htw.ai.busbunching.model.geometry.GeoLngLat
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 object RouteCalculator {
 
@@ -86,6 +87,28 @@ object RouteCalculator {
 			null
 		}
 	}
+
+	def smoothPoint(point: GeoLngLat, previousPoint: GeoLngLat = null, coordinates: mutable.Buffer[GeoLngLat]): GeoLngLat = {
+		if ((previousPoint != null && RouteCalculator.calculateDistanceBetweenPoints(previousPoint, point) > 50) || previousPoint == null) {
+			var possiblePoints: List[(GeoLngLat, Double)] = Nil
+			for (elem <- coordinates.indices) {
+				if (elem + 1 < coordinates.size) {
+					val startPoint = coordinates(elem)
+					val endPoint = coordinates(elem + 1)
+					val nearestPoint = RouteCalculator.getClosestPointOnSegment(startPoint, endPoint, point)
+					if (nearestPoint != null) {
+						possiblePoints = nearestPoint :: possiblePoints
+					}
+				}
+			}
+			// Get closest segment to point
+			if (possiblePoints != Nil) {
+				val lngLat = possiblePoints.minBy(x => x._2)._1
+				return lngLat
+			}
+		}
+		null
+	}
 }
 
 trait RouteCalculator {
@@ -107,10 +130,7 @@ trait RouteCalculator {
 
 		// calculate relative distance
 		asScalaBuffer(vehicles).map(v => {
-			// Calculate time distance
 			val timeDistance = calculateTimeDistance(v.getPosition, mainVehicle.getPosition, journeys, route)
-
-			// Calculate way distance
 			val wayDistance = v.getPastedDistance - mainVehicle.getPastedDistance
 
 			new VehicleRelativePosition(v.getRef, v.getPosition, wayDistance, timeDistance)

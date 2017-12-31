@@ -25,7 +25,6 @@ public class JourneyHandler extends DatabaseHandler {
 			stmt.setTimestamp(3, journey.getEndTime());
 
 			int affectedRows = stmt.executeUpdate();
-
 			if (affectedRows == 0) {
 				throw new SQLException("Creating user failed, no rows affected.");
 			}

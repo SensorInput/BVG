@@ -10,6 +10,7 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
+import javax.servlet.http.HttpServletResponse;
 import java.sql.Connection;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,15 +35,11 @@ public class RouteGetContext implements Route {
 			RouteStoreHandler databaseHandler = handler.getDatabaseHandler(connection);
 			routes.addAll(databaseHandler.getRoutes(route));
 		}
-//
-//		for (de.htw.ai.busbunching.model.Route r : routes) {
-//			System.out.println(RouteFactory.getHandler(r.getRouteType()).getRouteCalculator().calculateTotalRoute(r));
-//		}
 
 		connection.close();
 
 		if (routes.isEmpty()) {
-			response.status(404);
+			response.status(HttpServletResponse.SC_NOT_FOUND);
 			response.type("text/html; charset=utf-8");
 			return null; // Return 404 for empty route list
 		}

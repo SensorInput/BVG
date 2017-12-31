@@ -1,21 +1,24 @@
 package de.htw.ai.busbunching.handler;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.htw.ai.busbunching.database.VehicleHandler;
 import de.htw.ai.busbunching.database.route.RouteStoreHandler;
 import de.htw.ai.busbunching.factory.RouteFactory;
+import de.htw.ai.busbunching.model.Route;
 import de.htw.ai.busbunching.model.Vehicle;
 import de.htw.ai.busbunching.route.RouteCalculator;
 import de.htw.ai.busbunching.settings.Settings;
 import de.htw.ai.busbunching.utils.DatabaseUtils;
 import spark.Request;
 import spark.Response;
-import spark.Route;
 
+import javax.servlet.http.HttpServletResponse;
 import java.sql.Connection;
 import java.util.Optional;
 
-public class VehiclePutContext implements Route {
+public class VehiclePutContext implements spark.Route {
 
 	private Settings settings;
 	private ObjectMapper objectMapper;
@@ -32,26 +35,35 @@ public class VehiclePutContext implements Route {
 
 		String ref = request.params("id");
 
-		Vehicle vehicle = objectMapper.readValue(request.bodyAsBytes(), Vehicle.class);
-		vehicle.setRef(ref);
+		try {
+			Vehicle vehicle = objectMapper.readValue(request.bodyAsBytes(), Vehicle.class);
+			vehicle.setRef(ref);
 
-		if (vehicle.getPosition() != null) {
-			final Optional<de.htw.ai.busbunching.model.Route> route = RouteStoreHandler.getRoute(vehicle.getRouteId(), connection);
-			route.ifPresent(val -> {
-				final RouteCalculator routeCalculator = RouteFactory.getHandler(val.getRouteType()).getRouteCalculator();
-				vehicle.setPosition(routeCalculator.smoothVehiclePosition(vehicle.getPosition(), val));
-			});
-		}
+			if (vehicle.getPosition() != null) {
+				final Optional<Route> route = RouteStoreHandler.getRoute(vehicle.getRouteId(), connection);
+				route.ifPresent(val -> {
+					final RouteCalculator routeCalculator = RouteFactory.getHandler(val.getRouteType()).getRouteCalculator();
+					vehicle.setPosition(routeCalculator.smoothVehiclePosition(vehicle.getPosition(), val));
+				});
+			} else {
+				response.status(HttpServletResponse.SC_BAD_REQUEST);
+				return "Position is null";
+			}
 
-		boolean success = handler.update(vehicle);
+			boolean success = handler.update(vehicle);
 
-		connection.close();
-		if (success) {
-			response.status(204);
-			return 0;
-		} else {
-			response.status(404);
-			return null;
+			connection.close();
+			if (success) {
+				response.status(HttpServletResponse.SC_NO_CONTENT);
+				return 0;
+			} else {
+				response.status(HttpServletResponse.SC_NOT_FOUND);
+				return null;
+			}
+		} catch (JsonMappingException | JsonParseException e) {
+			e.printStackTrace();
+			response.status(HttpServletResponse.SC_BAD_REQUEST);
+			return e.getMessage();
 		}
 	}
 }

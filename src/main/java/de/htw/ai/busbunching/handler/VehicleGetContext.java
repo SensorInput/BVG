@@ -11,6 +11,7 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
+import javax.servlet.http.HttpServletResponse;
 import java.sql.Connection;
 import java.util.Optional;
 
@@ -45,7 +46,7 @@ public class VehicleGetContext implements Route {
 			response.type("application/json; charset=utf-8");
 			return vehicle.get();
 		} else {
-			response.status(404);
+			response.status(HttpServletResponse.SC_NOT_FOUND);
 			response.type("text/html; charset=utf-8");
 			return null;
 		}

@@ -1,7 +1,7 @@
 package de.htw.ai.busbunching.database.route;
 
 import de.htw.ai.busbunching.database.DatabaseHandler;
-import de.htw.ai.busbunching.geojson.GeoJsonMultilineStringConverter;
+import de.htw.ai.busbunching.geojson.GeoJsonMultiLineStringConverter;
 import de.htw.ai.busbunching.model.Route;
 import de.htw.ai.busbunching.model.geometry.GeoMultiLineString;
 import de.htw.ai.busbunching.model.route.MultiLineStringRoute;
@@ -23,7 +23,7 @@ public class MultiLineRouteStoreHandler extends DatabaseHandler implements Route
 		PreparedStatement stmt = null;
 		try {
 			stmt = connection.prepareStatement("INSERT INTO Multiline VALUES (0, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-			stmt.setString(1, GeoJsonMultilineStringConverter.multiLineStringToString(line.getMultiLineString()));
+			stmt.setString(1, GeoJsonMultiLineStringConverter.multiLineStringToString(line.getMultiLineString()));
 			stmt.setLong(2, line.getId());
 
 			stmt.executeUpdate();
@@ -67,7 +67,7 @@ public class MultiLineRouteStoreHandler extends DatabaseHandler implements Route
 				MultiLineStringRoute route = new MultiLineStringRoute(id, osmId, refFetched, name, type, network, operator, from, to);
 
 				getMultiLineString(id).ifPresent(data -> {
-					GeoMultiLineString geoMultiLineString = GeoJsonMultilineStringConverter.stringToMultiLineString(data);
+					GeoMultiLineString geoMultiLineString = GeoJsonMultiLineStringConverter.stringToMultiLineString(data);
 					route.setMultiLineString(geoMultiLineString);
 				});
 				routes.add(route);
@@ -123,7 +123,7 @@ public class MultiLineRouteStoreHandler extends DatabaseHandler implements Route
 				MultiLineStringRoute route = new MultiLineStringRoute(id, osmId, refFetched, name, type, network, operator, from, to);
 
 				getMultiLineString(id).ifPresent(data -> {
-					GeoMultiLineString geoMultiLineString = GeoJsonMultilineStringConverter.stringToMultiLineString(data);
+					GeoMultiLineString geoMultiLineString = GeoJsonMultiLineStringConverter.stringToMultiLineString(data);
 					route.setMultiLineString(geoMultiLineString);
 				});
 

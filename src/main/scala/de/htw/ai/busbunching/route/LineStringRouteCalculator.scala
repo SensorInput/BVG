@@ -123,7 +123,7 @@ class LineStringRouteCalculator extends RouteCalculator {
 	}
 
 	def smoothVehiclePosition(position: GeoLngLat, coordinates: mutable.Buffer[GeoLngLat]): GeoLngLat = {
-		smoothPoint(point = position, coordinates = coordinates)
+		RouteCalculator.smoothPoint(point = position, coordinates = coordinates)
 	}
 
 	override def smoothJourneyCoordinates(journey: Journey, route: Route): util.List[MeasurePoint] = {
@@ -142,34 +142,12 @@ class LineStringRouteCalculator extends RouteCalculator {
 		var prevMeasurePoint: GeoLngLat = null
 
 		journey.getPoints.forEach(x => {
-			val result = smoothPoint(x.getLngLat, prevMeasurePoint, coordinates)
+			val result = RouteCalculator.smoothPoint(x.getLngLat, prevMeasurePoint, coordinates)
 			prevMeasurePoint = x.getLngLat
 			if (result != null) {
 				resultList.add(new MeasurePoint(x.getId, x.getJourneyId, x.getTime, result))
 			}
 		})
 		resultList
-	}
-
-	private def smoothPoint(point: GeoLngLat, previousPoint: GeoLngLat = null, coordinates: mutable.Buffer[GeoLngLat]): GeoLngLat = {
-		if ((previousPoint != null && RouteCalculator.calculateDistanceBetweenPoints(previousPoint, point) > 50) || previousPoint == null) {
-			var possiblePoints: List[(GeoLngLat, Double)] = Nil
-			for (elem <- coordinates.indices) {
-				if (elem + 1 < coordinates.size) {
-					val startPoint = coordinates(elem)
-					val endPoint = coordinates(elem + 1)
-					val nearestPoint = RouteCalculator.getClosestPointOnSegment(startPoint, endPoint, point)
-					if (nearestPoint != null) {
-						possiblePoints = nearestPoint :: possiblePoints
-					}
-				}
-			}
-			// Get closest segment to point
-			if (possiblePoints != Nil) {
-				val lngLat = possiblePoints.minBy(x => x._2)._1
-				return lngLat
-			}
-		}
-		null
 	}
 }

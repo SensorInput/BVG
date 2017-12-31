@@ -5,7 +5,7 @@ import org.geojson.MultiLineString
 
 import scala.collection.JavaConverters._
 
-object GeoJsonMultilineStringConverter {
+object GeoJsonMultiLineStringConverter {
 
 	def convertGeoJsonToMultiLineString(multiLineString: MultiLineString): GeoMultiLineString = {
 		val lines = asScalaBuffer(multiLineString.getCoordinates)

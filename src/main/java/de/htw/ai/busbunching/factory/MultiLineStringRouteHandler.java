@@ -2,7 +2,7 @@ package de.htw.ai.busbunching.factory;
 
 import de.htw.ai.busbunching.database.route.MultiLineRouteStoreHandler;
 import de.htw.ai.busbunching.database.route.RouteStoreHandler;
-import de.htw.ai.busbunching.geojson.GeoJsonMultilineStringConverter;
+import de.htw.ai.busbunching.geojson.GeoJsonMultiLineStringConverter;
 import de.htw.ai.busbunching.model.Route;
 import de.htw.ai.busbunching.model.geometry.GeoMultiLineString;
 import de.htw.ai.busbunching.model.route.MultiLineStringRoute;
@@ -29,7 +29,7 @@ public class MultiLineStringRouteHandler implements RouteHandler {
 
 		if (feature.getGeometry() instanceof MultiLineString) {
 			final MultiLineString geometry = (MultiLineString) feature.getGeometry();
-			final GeoMultiLineString multiLineString = GeoJsonMultilineStringConverter.convertGeoJsonToMultiLineString(geometry);
+			final GeoMultiLineString multiLineString = GeoJsonMultiLineStringConverter.convertGeoJsonToMultiLineString(geometry);
 			return new MultiLineStringRoute(osmId, ref, name, type, network, operator, form, to, multiLineString);
 		} else {
 			return null;
@@ -59,7 +59,7 @@ public class MultiLineStringRouteHandler implements RouteHandler {
 		value.getProperties().put("from", route.getFrom());
 		value.getProperties().put("to", route.getTo());
 		if (route instanceof MultiLineStringRoute) {
-			final MultiLineString geometry = GeoJsonMultilineStringConverter.convertMultiLineStringToGeoJson(((MultiLineStringRoute) route).getMultiLineString());
+			final MultiLineString geometry = GeoJsonMultiLineStringConverter.convertMultiLineStringToGeoJson(((MultiLineStringRoute) route).getMultiLineString());
 			value.setGeometry(geometry);
 		}
 		return value;
