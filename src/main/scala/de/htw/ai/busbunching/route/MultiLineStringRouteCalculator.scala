@@ -56,7 +56,7 @@ class MultiLineStringRouteCalculator extends RouteCalculator {
 	}
 
 
-	override def smoothVehiclePosition(position: GeoLngLat, route: Route): GeoLngLat = {
+	override def smoothPosition(position: GeoLngLat, route: Route): GeoLngLat = {
 		route match {
 			case multiLineStringRoute: MultiLineStringRoute =>
 				val lineString = getRelevantLineString(multiLineStringRoute.getMultiLineString)

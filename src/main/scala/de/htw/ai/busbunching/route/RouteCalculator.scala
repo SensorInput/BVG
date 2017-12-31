@@ -10,6 +10,13 @@ import scala.collection.mutable
 
 object RouteCalculator {
 
+	/**
+	  * Calculate distance between two geo points in meters.
+	  *
+	  * @param c1 point a
+	  * @param c2 point b
+	  * @return distance in meters
+	  */
 	def calculateDistanceBetweenPoints(c1: GeoLngLat, c2: GeoLngLat): Double = {
 		getDistance(c1.getLat, c1.getLng, c2.getLat, c2.getLng)
 	}
@@ -42,6 +49,14 @@ object RouteCalculator {
 		rad * 180 / Math.PI
 	}
 
+	/**
+	  * Check if a point is on a line of two geo coordinates.
+	  *
+	  * @param x     point a
+	  * @param y     point b
+	  * @param point test point
+	  * @return <code>true</code> point is on line
+	  */
 	def isPointOnLine(x: GeoLngLat, y: GeoLngLat, point: GeoLngLat): Boolean = {
 		if (y.getLng - x.getLng != 0) {
 			val m = (y.getLat - x.getLat) / (y.getLng - x.getLng)
@@ -55,6 +70,14 @@ object RouteCalculator {
 	}
 
 	// http://www.java2s.com/Code/Java/2D-Graphics-GUI/Returnsclosestpointonsegmenttopoint.htm
+	/**
+	  * Returns closest point on segment to point
+	  *
+	  * @param start start point of the segment
+	  * @param end   end point of the segment
+	  * @param point given point
+	  * @return closets point on segment to point with distance to given point or null
+	  */
 	def getClosestPointOnSegment(start: GeoLngLat, end: GeoLngLat, point: GeoLngLat): (GeoLngLat, Double) = {
 		val nearestPoint = getClosestPointOnSegment(start.getLng, start.getLat, end.getLng, end.getLat, point.getLng, point.getLat)
 		if (nearestPoint != null) {
@@ -73,7 +96,7 @@ object RouteCalculator {
 	  * @param sy2 segment y coord 2
 	  * @param px  point x coord
 	  * @param py  point y coord
-	  * @return closets point on segment to point
+	  * @return closets point on segment to point or null
 	  */
 	def getClosestPointOnSegment(sx1: Double, sy1: Double, sx2: Double, sy2: Double, px: Double, py: Double): GeoLngLat = {
 		val xDelta = sx2 - sx1
@@ -88,6 +111,15 @@ object RouteCalculator {
 		}
 	}
 
+	/**
+	  * Find the closest point on a route (list of coordinates). The previous point is for filtering.
+	  * Points closer then 50 meters are ignored.
+	  *
+	  * @param point         given point
+	  * @param previousPoint previous point
+	  * @param coordinates   list of coordinates of the route
+	  * @return closest point
+	  */
 	def smoothPoint(point: GeoLngLat, previousPoint: GeoLngLat = null, coordinates: mutable.Buffer[GeoLngLat]): GeoLngLat = {
 		if ((previousPoint != null && RouteCalculator.calculateDistanceBetweenPoints(previousPoint, point) > 50) || previousPoint == null) {
 			var possiblePoints: List[(GeoLngLat, Double)] = Nil
@@ -103,8 +135,7 @@ object RouteCalculator {
 			}
 			// Get closest segment to point
 			if (possiblePoints != Nil) {
-				val lngLat = possiblePoints.minBy(x => x._2)._1
-				return lngLat
+				return possiblePoints.minBy(x => x._2)._1
 			}
 		}
 		null
@@ -114,15 +145,32 @@ object RouteCalculator {
 trait RouteCalculator {
 
 	/**
-	  * Calculates the route in meters.
+	  * Calculates the length of a route in meters.
 	  *
 	  * @param route route
 	  * @return distance in meters
 	  */
 	def calculateTotalRoute(route: Route): Double
 
+	/**
+	  * Calculate the length between the start point of a route to a given point of the route.
+	  *
+	  * @param route     route
+	  * @param geoLngLat end point
+	  * @return distance in meters
+	  */
 	def calculateProgressOnRoute(route: Route, geoLngLat: GeoLngLat): Double
 
+	/**
+	  * Calculate the relative distance between vehicles. The result contains the way and time distance.
+	  * The distance is for each vehicle relative to the main vehicle. All vehicles must be on the same route.
+	  *
+	  * @param route       route
+	  * @param mainVehicle reference vehicle
+	  * @param vehicles    list of vehicles in the route
+	  * @param journeys    journeys for time calculation
+	  * @return list of relative vehicle positions. Way distance in meter, time distance in milliseconds.
+	  */
 	def calculateRelativeVehiclePositions(route: Route, mainVehicle: Vehicle, vehicles: util.List[Vehicle], journeys: util.List[Journey]): util.List[VehicleRelativePosition] = {
 		// Calculate pasted distance
 		vehicles.forEach(v => v.setPastedDistance(calculateProgressOnRoute(route, v.getPosition)))
@@ -137,9 +185,32 @@ trait RouteCalculator {
 		}).sortWith(_.getRelativeDistance < _.getRelativeDistance).toList.asJava
 	}
 
+	/**
+	  * Calculate the time distance between two points depending on journeys.
+	  *
+	  * @param start    start point
+	  * @param end      end point
+	  * @param journeys journeys of the route
+	  * @param route    route
+	  * @return time distance in milliseconds
+	  */
 	def calculateTimeDistance(start: GeoLngLat, end: GeoLngLat, journeys: util.List[Journey], route: Route): Double
 
-	def smoothVehiclePosition(position: GeoLngLat, route: Route): GeoLngLat
+	/**
+	  * Calculate the closest point on a route
+	  *
+	  * @param position position offside the route
+	  * @param route    route
+	  * @return closest point on the route
+	  */
+	def smoothPosition(position: GeoLngLat, route: Route): GeoLngLat
 
+	/**
+	  * Calculate the closest point for all journey points on a route
+	  *
+	  * @param journey journey offside the route
+	  * @param route   route
+	  * @return list of closest points on the route
+	  */
 	def smoothJourneyCoordinates(journey: Journey, route: Route): util.List[MeasurePoint]
 }

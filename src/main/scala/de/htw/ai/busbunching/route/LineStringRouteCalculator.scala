@@ -16,12 +16,6 @@ class LineStringRouteCalculator extends RouteCalculator {
 		def mean: Double = values.sum / values.length
 	}
 
-	/**
-	  * Calculates the route in meters.
-	  *
-	  * @param route route
-	  * @return distance in meters
-	  */
 	override def calculateTotalRoute(route: Route): Double = {
 		route match {
 			case lineStringRoute: LineStringRoute =>
@@ -85,6 +79,18 @@ class LineStringRouteCalculator extends RouteCalculator {
 		}
 	}
 
+	/**
+	  * Calculate the time distances depending on journeys.
+	  * For the calculation, for each journey the time distance is calculated. The result is the mean of all values.
+	  * To get the time distance using one journey, there are needed two points from the journey.
+	  * This points are the closest points to the given start and end points. The the time difference is calculated.
+	  *
+	  * @param start      start point
+	  * @param end        end point
+	  * @param journeys   list of journeys
+	  * @param lineString line string of the route
+	  * @return time distance in milliseconds
+	  */
 	def calculateTimeDistance(start: GeoLngLat, end: GeoLngLat, journeys: util.List[Journey], lineString: GeoLineString): Double = {
 		asScalaBuffer(journeys)
 			.filter(journey => !journey.getPoints.isEmpty)
@@ -112,7 +118,7 @@ class LineStringRouteCalculator extends RouteCalculator {
 		closestPoint._2
 	}
 
-	override def smoothVehiclePosition(position: GeoLngLat, route: Route): GeoLngLat = {
+	override def smoothPosition(position: GeoLngLat, route: Route): GeoLngLat = {
 		route match {
 			case lineStringRoute: LineStringRoute =>
 				val coordinates = asScalaBuffer(lineStringRoute.getLineString.getCoordinates)
@@ -137,17 +143,16 @@ class LineStringRouteCalculator extends RouteCalculator {
 	}
 
 	def smoothJourneyCoordinates(journey: Journey, coordinates: mutable.Buffer[GeoLngLat]): util.List[MeasurePoint] = {
-		val resultList = new util.ArrayList[MeasurePoint]()
-
 		var prevMeasurePoint: GeoLngLat = null
 
-		journey.getPoints.forEach(x => {
-			val result = RouteCalculator.smoothPoint(x.getLngLat, prevMeasurePoint, coordinates)
-			prevMeasurePoint = x.getLngLat
-			if (result != null) {
-				resultList.add(new MeasurePoint(x.getId, x.getJourneyId, x.getTime, result))
-			}
-		})
-		resultList
+		asScalaBuffer(journey.getPoints)
+			.map(x => {
+				val result = RouteCalculator.smoothPoint(x.getLngLat, prevMeasurePoint, coordinates)
+				prevMeasurePoint = x.getLngLat
+				(x, result)
+			})
+			.filter(p => p._2 != null)
+			.map(p => new MeasurePoint(p._1.getId, p._1.getJourneyId, p._1.getTime, p._2))
+			.asJava
 	}
 }
