@@ -3,7 +3,10 @@ package de.htw.ai.busbunching.database;
 import de.htw.ai.busbunching.model.Vehicle;
 import de.htw.ai.busbunching.model.geometry.GeoLngLat;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,7 +28,6 @@ public class VehicleHandler extends DatabaseHandler {
 
 			rs = stmt.executeQuery();
 			if (rs.first()) {
-				long id = rs.getLong("id");
 				String refFetched = rs.getString("ref");
 
 				long routeId = rs.getLong("route_id");
@@ -33,7 +35,7 @@ public class VehicleHandler extends DatabaseHandler {
 				double lng = rs.getDouble("lng");
 				double lat = rs.getDouble("lat");
 
-				return Optional.of(new Vehicle(id, refFetched, routeId, time, new GeoLngLat(lng, lat)));
+				return Optional.of(new Vehicle(refFetched, routeId, time, new GeoLngLat(lng, lat)));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -53,14 +55,13 @@ public class VehicleHandler extends DatabaseHandler {
 
 			rs = stmt.executeQuery();
 			while (rs.next()) {
-				long id = rs.getLong("id");
 				String ref = rs.getString("ref");
 
 				long time = rs.getLong("time");
 				double lng = rs.getDouble("lng");
 				double lat = rs.getDouble("lat");
 
-				vehicles.add(new Vehicle(id, ref, routeId, time, new GeoLngLat(lng, lat)));
+				vehicles.add(new Vehicle(ref, routeId, time, new GeoLngLat(lng, lat)));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -70,12 +71,11 @@ public class VehicleHandler extends DatabaseHandler {
 		return vehicles;
 	}
 
-	public long insert(Vehicle vehicle) {
+	public boolean insert(Vehicle vehicle) {
 		PreparedStatement stmt = null;
-		ResultSet rs = null;
 
 		try {
-			stmt = connection.prepareStatement("INSERT INTO Vehicle VALUES (0, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			stmt = connection.prepareStatement("INSERT INTO Vehicle VALUES (?, ?, ?, ?, ?)");
 			stmt.setString(1, vehicle.getRef());
 			stmt.setLong(2, vehicle.getRouteId());
 			stmt.setLong(3, vehicle.getTime());
@@ -87,19 +87,13 @@ public class VehicleHandler extends DatabaseHandler {
 			if (affectedRows == 0) {
 				throw new SQLException("Creating user failed, no rows affected.");
 			}
-
-			rs = stmt.getGeneratedKeys();
-			if (rs.next()) {
-				return rs.getLong(1);
-			} else {
-				throw new SQLException("Creating route failed, no ID obtained.");
-			}
+			return true;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
-			closeResources(stmt, rs);
+			closeResources(stmt, null);
 		}
-		return -1;
+		return false;
 	}
 
 	public boolean update(Vehicle vehicle) {
@@ -116,8 +110,8 @@ public class VehicleHandler extends DatabaseHandler {
 			stmt = connection.prepareStatement("UPDATE Vehicle SET route_id = ?, time = ?, lng = ?, lat = ? WHERE ref = ?");
 			stmt.setLong(1, vehicle.getRouteId() != 0 ? vehicle.getRouteId() : oldVehicle.getRouteId());
 			stmt.setLong(2, vehicle.getTime() != 0 ? vehicle.getTime() : oldVehicle.getTime());
-			stmt.setDouble(3, vehicle.getPosition().getLng() != 0 ? vehicle.getPosition().getLng() : oldVehicle.getPosition().getLng());
-			stmt.setDouble(4, vehicle.getPosition().getLat() != 0 ? vehicle.getPosition().getLat() : oldVehicle.getPosition().getLat());
+			stmt.setDouble(3, vehicle.getPosition() != null && vehicle.getPosition().getLng() != 0 ? vehicle.getPosition().getLng() : oldVehicle.getPosition().getLng());
+			stmt.setDouble(4, vehicle.getPosition() != null && vehicle.getPosition().getLat() != 0 ? vehicle.getPosition().getLat() : oldVehicle.getPosition().getLat());
 
 			stmt.setString(5, vehicle.getRef());
 

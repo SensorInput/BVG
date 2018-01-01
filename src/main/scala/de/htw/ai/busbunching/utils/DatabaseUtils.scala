@@ -56,17 +56,15 @@ object DatabaseUtils {
 
 		createTable(
 			"""CREATE TABLE IF NOT EXISTS `Vehicle` (
-			  |  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
 			  |  `ref` varchar(16) NOT NULL DEFAULT '' COMMENT 'Android Device ID',
 			  |  `route_id` int(10) unsigned DEFAULT NULL,
 			  |  `time` bigint(20) DEFAULT NULL,
 			  |  `lng` double DEFAULT NULL,
 			  |  `lat` double DEFAULT NULL,
-			  |  PRIMARY KEY (`id`),
-			  |  UNIQUE KEY `ref` (`ref`),
+			  |  PRIMARY KEY (`ref`),
 			  |  KEY `route_id` (`route_id`),
 			  |  CONSTRAINT `Vehicle_ibfk_1` FOREIGN KEY (`route_id`) REFERENCES `Route` (`id`)
-			  |) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;""".stripMargin)
+			  |) ENGINE=InnoDB DEFAULT CHARSET=latin1;""".stripMargin)
 
 		createTable(
 			"""CREATE TABLE IF NOT EXISTS `Journey` (

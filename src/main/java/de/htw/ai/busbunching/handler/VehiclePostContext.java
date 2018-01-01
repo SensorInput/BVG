@@ -44,9 +44,9 @@ public class VehiclePostContext implements spark.Route {
 				});
 			}
 
-			long id = handler.insert(vehicle);
-			if (id != -1) {
-				return id;
+			boolean success = handler.insert(vehicle);
+			if (success) {
+				return vehicle;
 			} else {
 				response.status(HttpServletResponse.SC_BAD_REQUEST);
 				return "Bad payload for vehicle";

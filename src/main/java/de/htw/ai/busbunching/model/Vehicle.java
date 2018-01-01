@@ -4,7 +4,6 @@ import de.htw.ai.busbunching.model.geometry.GeoLngLat;
 
 public class Vehicle {
 
-	private Long id;
 	private String ref;
 
 	private Long routeId;
@@ -22,23 +21,10 @@ public class Vehicle {
 	}
 
 	public Vehicle(String ref, long routeId, long time, GeoLngLat position) {
-		this(0, ref, routeId, time, position);
-	}
-
-	public Vehicle(long id, String ref, long routeId, long time, GeoLngLat position) {
-		this.id = id;
 		this.ref = ref;
 		this.routeId = routeId;
 		this.time = time;
 		this.position = position;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
 	}
 
 	public String getRef() {
@@ -84,8 +70,7 @@ public class Vehicle {
 	@Override
 	public String toString() {
 		return "Vehicle{" +
-				"id=" + id +
-				", ref='" + ref + '\'' +
+				"ref='" + ref + '\'' +
 				", routeId=" + routeId +
 				", time=" + time +
 				", position=" + position +
