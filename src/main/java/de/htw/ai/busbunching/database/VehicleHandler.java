@@ -103,14 +103,21 @@ public class VehicleHandler extends DatabaseHandler {
 	}
 
 	public boolean update(Vehicle vehicle) {
-		PreparedStatement stmt = null;
+		Optional<Vehicle> oldVehicleOp = getVehicle(vehicle.getRef());
 
+		if (!oldVehicleOp.isPresent()) {
+			return false;
+		}
+
+		Vehicle oldVehicle = oldVehicleOp.get();
+
+		PreparedStatement stmt = null;
 		try {
 			stmt = connection.prepareStatement("UPDATE Vehicle SET route_id = ?, time = ?, lng = ?, lat = ? WHERE ref = ?");
-			stmt.setLong(1, vehicle.getRouteId());
-			stmt.setLong(2, vehicle.getTime());
-			stmt.setDouble(3, vehicle.getPosition().getLng());
-			stmt.setDouble(4, vehicle.getPosition().getLat());
+			stmt.setLong(1, vehicle.getRouteId() != 0 ? vehicle.getRouteId() : oldVehicle.getRouteId());
+			stmt.setLong(2, vehicle.getTime() != 0 ? vehicle.getTime() : oldVehicle.getTime());
+			stmt.setDouble(3, vehicle.getPosition() != null ? vehicle.getPosition().getLng() : oldVehicle.getPosition().getLng());
+			stmt.setDouble(4, vehicle.getPosition() != null ? vehicle.getPosition().getLat() : oldVehicle.getPosition().getLat());
 
 			stmt.setString(5, vehicle.getRef());
 
@@ -123,5 +130,28 @@ public class VehicleHandler extends DatabaseHandler {
 			closeResources(stmt, null);
 		}
 		return false;
+	}
+
+	public void insertIntoHistory(Vehicle vehicle) {
+		PreparedStatement stmt = null;
+
+		try {
+			stmt = connection.prepareStatement("INSERT INTO VehicleHistory VALUES (0, ?, ?, ?, ?, ?)");
+			stmt.setString(1, vehicle.getRef());
+			stmt.setLong(2, vehicle.getRouteId());
+			stmt.setLong(3, vehicle.getTime());
+			stmt.setDouble(4, vehicle.getPosition().getLng());
+			stmt.setDouble(5, vehicle.getPosition().getLat());
+
+			int affectedRows = stmt.executeUpdate();
+
+			if (affectedRows == 0) {
+				throw new SQLException("Creating user failed, no rows affected.");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			closeResources(stmt, null);
+		}
 	}
 }

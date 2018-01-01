@@ -45,9 +45,9 @@ public class VehiclePutContext implements spark.Route {
 					final RouteCalculator routeCalculator = RouteFactory.getHandler(val.getRouteType()).getRouteCalculator();
 					vehicle.setPosition(routeCalculator.smoothPosition(vehicle.getPosition(), val));
 				});
-			} else {
-				response.status(HttpServletResponse.SC_BAD_REQUEST);
-				return "Position is null";
+
+				// Save old vehicle position into history database
+				handler.getVehicle(ref).ifPresent(handler::insertIntoHistory);
 			}
 
 			boolean success = handler.update(vehicle);
