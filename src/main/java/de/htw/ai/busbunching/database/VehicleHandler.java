@@ -116,8 +116,8 @@ public class VehicleHandler extends DatabaseHandler {
 			stmt = connection.prepareStatement("UPDATE Vehicle SET route_id = ?, time = ?, lng = ?, lat = ? WHERE ref = ?");
 			stmt.setLong(1, vehicle.getRouteId() != 0 ? vehicle.getRouteId() : oldVehicle.getRouteId());
 			stmt.setLong(2, vehicle.getTime() != 0 ? vehicle.getTime() : oldVehicle.getTime());
-			stmt.setDouble(3, vehicle.getPosition() != null ? vehicle.getPosition().getLng() : oldVehicle.getPosition().getLng());
-			stmt.setDouble(4, vehicle.getPosition() != null ? vehicle.getPosition().getLat() : oldVehicle.getPosition().getLat());
+			stmt.setDouble(3, vehicle.getPosition().getLng() != 0 ? vehicle.getPosition().getLng() : oldVehicle.getPosition().getLng());
+			stmt.setDouble(4, vehicle.getPosition().getLat() != 0 ? vehicle.getPosition().getLat() : oldVehicle.getPosition().getLat());
 
 			stmt.setString(5, vehicle.getRef());
 
