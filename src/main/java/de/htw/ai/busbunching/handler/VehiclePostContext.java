@@ -35,10 +35,10 @@ public class VehiclePostContext implements spark.Route {
 
 		try {
 			Vehicle vehicle = objectMapper.readValue(request.bodyAsBytes(), Vehicle.class);
-			Vehicle fetchedVehicle = handler.getVehicle(vehicle.getRef()).orElse(vehicle);
+			vehicle.setTime(System.currentTimeMillis());
 
 			if (vehicle.getPosition() != null) {
-				final Optional<Route> route = RouteStoreHandler.getRoute(fetchedVehicle.getRouteId(), connection);
+				final Optional<Route> route = RouteStoreHandler.getRoute(vehicle.getRouteId(), connection);
 				route.ifPresent(val -> {
 					final RouteCalculator routeCalculator = RouteFactory.getHandler(val.getRouteType()).getRouteCalculator();
 					vehicle.setPosition(routeCalculator.smoothPosition(vehicle.getPosition(), val));

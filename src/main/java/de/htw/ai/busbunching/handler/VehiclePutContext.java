@@ -38,6 +38,7 @@ public class VehiclePutContext implements spark.Route {
 		try {
 			Vehicle vehicle = objectMapper.readValue(request.bodyAsBytes(), Vehicle.class);
 			vehicle.setRef(ref);
+			vehicle.setTime(System.currentTimeMillis());
 
 			long routeId = handler.getVehicle(vehicle.getRef()).orElse(vehicle).getRouteId();
 			if (routeId == 0) {
