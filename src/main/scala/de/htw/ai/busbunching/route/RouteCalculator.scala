@@ -105,7 +105,7 @@ object RouteCalculator {
 		val u = ((px - sx1) * xDelta + (py - sy1) * yDelta) / (xDelta * xDelta + yDelta * yDelta)
 
 		if (u <= 1.0 && u >= 0.0) {
-			new GeoLngLat(sx1 + u * xDelta.round.toInt, sy1 + u * yDelta.round.toInt)
+			new GeoLngLat(sx1 + u * xDelta, sy1 + u * yDelta)
 		} else {
 			null
 		}

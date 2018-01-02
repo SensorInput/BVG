@@ -75,12 +75,8 @@ public class VehicleHandler extends DatabaseHandler {
 		PreparedStatement stmt = null;
 
 		try {
-			stmt = connection.prepareStatement("INSERT INTO Vehicle VALUES (?, ?, ?, ?, ?)");
+			stmt = connection.prepareStatement("INSERT INTO Vehicle (ref) VALUES (?)");
 			stmt.setString(1, vehicle.getRef());
-			stmt.setLong(2, vehicle.getRouteId());
-			stmt.setLong(3, vehicle.getTime());
-			stmt.setDouble(4, vehicle.getPosition().getLng());
-			stmt.setDouble(5, vehicle.getPosition().getLat());
 
 			int affectedRows = stmt.executeUpdate();
 
@@ -107,8 +103,13 @@ public class VehicleHandler extends DatabaseHandler {
 
 		PreparedStatement stmt = null;
 		try {
+			Long routeId = vehicle.getRouteId() != 0 ? vehicle.getRouteId() : oldVehicle.getRouteId();
+			if (routeId == -1) {
+				routeId = null;
+			}
+
 			stmt = connection.prepareStatement("UPDATE Vehicle SET route_id = ?, time = ?, lng = ?, lat = ? WHERE ref = ?");
-			stmt.setLong(1, vehicle.getRouteId() != 0 ? vehicle.getRouteId() : oldVehicle.getRouteId());
+			stmt.setObject(1, routeId);
 			stmt.setLong(2, vehicle.getTime() != 0 ? vehicle.getTime() : oldVehicle.getTime());
 			stmt.setDouble(3, vehicle.getPosition() != null && vehicle.getPosition().getLng() != 0 ? vehicle.getPosition().getLng() : oldVehicle.getPosition().getLng());
 			stmt.setDouble(4, vehicle.getPosition() != null && vehicle.getPosition().getLat() != 0 ? vehicle.getPosition().getLat() : oldVehicle.getPosition().getLat());
