@@ -59,6 +59,8 @@ public class BusBunchingMain {
 
 			get("/vehicle/:id", new VehicleGetContext(settings), new JsonTransformer());
 			get("/vehicle/:id/list", new VehicleListContext(settings), new JsonTransformer());
+			get("/vehicles", new VehicleHistoryGetContext(settings), new JsonTransformer());
+			get("/vehicles/:ref", new VehicleHistoryGetContext(settings), new JsonTransformer());
 			post("/vehicle", "application/json", new VehiclePostContext(settings), new JsonTransformer());
 			put("/vehicle/:id", "application/json", new VehiclePutContext(settings), new JsonTransformer());
 		});

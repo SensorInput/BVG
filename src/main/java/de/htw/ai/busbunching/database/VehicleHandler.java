@@ -71,6 +71,57 @@ public class VehicleHandler extends DatabaseHandler {
 		return vehicles;
 	}
 
+	public List<Vehicle> getVehiclesHistory() {
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		List<Vehicle> vehicles = new ArrayList<>();
+		try {
+			stmt = connection.prepareStatement("SELECT * FROM VehicleHistory");
+
+			rs = stmt.executeQuery();
+			while (rs.next()) {
+				String ref = rs.getString("ref");
+				long routeId = rs.getLong("route_id");
+
+				long time = rs.getLong("time");
+				double lng = rs.getDouble("lng");
+				double lat = rs.getDouble("lat");
+
+				vehicles.add(new Vehicle(ref, routeId, time, new GeoLngLat(lng, lat)));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			closeResources(stmt, rs);
+		}
+		return vehicles;
+	}
+
+	public List<Vehicle> getVehiclesHistory(String ref) {
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		List<Vehicle> vehicles = new ArrayList<>();
+		try {
+			stmt = connection.prepareStatement("SELECT * FROM VehicleHistory WHERE ref = ?");
+			stmt.setString(1, ref);
+			rs = stmt.executeQuery();
+			while (rs.next()) {
+				long routeId = rs.getLong("route_id");
+
+				long time = rs.getLong("time");
+				double lng = rs.getDouble("lng");
+				double lat = rs.getDouble("lat");
+
+				vehicles.add(new Vehicle(ref, routeId, time, new GeoLngLat(lng, lat)));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			closeResources(stmt, rs);
+		}
+		return vehicles;
+	}
+
 	public boolean insert(Vehicle vehicle) {
 		PreparedStatement stmt = null;
 

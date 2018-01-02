@@ -37,11 +37,15 @@ public class VehiclePutContext implements spark.Route {
 
 		try {
 			Vehicle vehicle = objectMapper.readValue(request.bodyAsBytes(), Vehicle.class);
-			Vehicle fetchedVehicle = handler.getVehicle(vehicle.getRef()).orElse(vehicle);
 			vehicle.setRef(ref);
 
+			long routeId = handler.getVehicle(vehicle.getRef()).orElse(vehicle).getRouteId();
+			if (routeId == 0) {
+				routeId = vehicle.getRouteId();
+			}
+
 			if (vehicle.getPosition() != null) {
-				final Optional<Route> route = RouteStoreHandler.getRoute(fetchedVehicle.getRouteId(), connection);
+				final Optional<Route> route = RouteStoreHandler.getRoute(routeId, connection);
 				route.ifPresent(val -> {
 					final RouteCalculator routeCalculator = RouteFactory.getHandler(val.getRouteType()).getRouteCalculator();
 					vehicle.setPosition(routeCalculator.smoothPosition(vehicle.getPosition(), val));
@@ -51,8 +55,9 @@ public class VehiclePutContext implements spark.Route {
 				handler.getVehicle(ref).ifPresent(handler::insertIntoHistory);
 			}
 
-			boolean success = handler.update(vehicle);
+			System.out.println(vehicle.getPosition());
 
+			boolean success = handler.update(vehicle);
 			if (success) {
 				response.status(HttpServletResponse.SC_NO_CONTENT);
 				return 0;
