@@ -107,7 +107,13 @@ object RouteCalculator {
 		if (u <= 1.0 && u >= 0.0) {
 			new GeoLngLat(sx1 + u * xDelta, sy1 + u * yDelta)
 		} else {
-			null
+			if (u < 0) {
+				new GeoLngLat(sx1, sy1)
+			} else if (u > 1) {
+				new GeoLngLat(sx2, sy2)
+			} else {
+				null
+			}
 		}
 	}
 
