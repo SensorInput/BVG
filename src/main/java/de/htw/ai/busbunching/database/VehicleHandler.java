@@ -184,7 +184,7 @@ public class VehicleHandler extends DatabaseHandler {
 		try {
 			stmt = connection.prepareStatement("INSERT INTO VehicleHistory VALUES (0, ?, ?, ?, ?, ?)");
 			stmt.setString(1, vehicle.getRef());
-			stmt.setLong(2, vehicle.getRouteId());
+			stmt.setObject(2, vehicle.getRouteId() != 0 ? vehicle.getRouteId() : null);
 			stmt.setLong(3, vehicle.getTime());
 			stmt.setDouble(4, vehicle.getPosition().getLng());
 			stmt.setDouble(5, vehicle.getPosition().getLat());

@@ -56,8 +56,6 @@ public class VehiclePutContext implements spark.Route {
 				handler.getVehicle(ref).ifPresent(handler::insertIntoHistory);
 			}
 
-			System.out.println(vehicle.getPosition());
-
 			boolean success = handler.update(vehicle);
 			if (success) {
 				response.status(HttpServletResponse.SC_NO_CONTENT);
