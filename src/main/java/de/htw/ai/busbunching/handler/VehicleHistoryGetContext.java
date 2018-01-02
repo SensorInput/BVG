@@ -34,12 +34,18 @@ public class VehicleHistoryGetContext implements spark.Route {
 		}
 		connection.close();
 
-		SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+		if (request.headers("Accept") != null && !request.headers("Accept").equals("application/json")) {
+			SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
-		List<String> vehicles = new ArrayList<>();
-		for (Vehicle vehicle : vehiclesHistory) {
-			vehicles.add(vehicle.getRef() + " @ " + vehicle.getPosition().getLat() + " " + vehicle.getPosition().getLng() + " @ " + dateFormat.format(vehicle.getTime()));
+			List<String> vehicles = new ArrayList<>();
+			for (Vehicle vehicle : vehiclesHistory) {
+				vehicles.add(vehicle.getRef() + " @ " + vehicle.getPosition().getLat() + " " + vehicle.getPosition().getLng() + " @ " + dateFormat.format(vehicle.getTime()));
+			}
+			response.type("text/plain");
+			return vehicles;
+		} else {
+			response.type("application/json");
+			return vehiclesHistory;
 		}
-		return vehicles;
 	}
 }
